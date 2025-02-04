@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    String flutterStorageUrl = System.env.FLUTTER_STORAGE_BASE_URL ?: "https://storage.googleapis.com"
+    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://inapptestreclaim.s3.ap-south-1.amazonaws.com"
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "$reclaimStorageUrl"
+        }
+        maven {
+            url 'https://jitpack.io'
+            content { includeGroup "com.github.reclaimprotocol" }
+        }
+        maven {
+            url "$flutterStorageUrl/download.flutter.io"
+        }
+    }
+}
+
+rootProject.name = "reclaim_inapp_sdk_example"
+include ':app'
