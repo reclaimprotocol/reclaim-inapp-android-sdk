@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.1"
+reclaim_verifier_module = "1.0"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -15,6 +16,9 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+reclaim_debug = { module = "org.reclaimprotocol.reclaim_verifier_module:flutter_debug", version.ref = "reclaim_verifier_module" }
+reclaim_profile = { module = "org.reclaimprotocol.reclaim_verifier_module:flutter_profile", version.ref = "reclaim_verifier_module" }
+reclaim_release = { module = "org.reclaimprotocol.reclaim_verifier_module:flutter_release", version.ref = "reclaim_verifier_module" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
