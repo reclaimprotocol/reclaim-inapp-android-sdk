@@ -20,15 +20,11 @@ Add the following repositories to your `settings.gradle` file's repositories blo
 ```groovy
 dependencyResolutionManagement {
     String flutterStorageUrl = System.env.FLUTTER_STORAGE_BASE_URL ?: "https://storage.googleapis.com"
-    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://inapptestreclaim.s3.ap-south-1.amazonaws.com"
+    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/v1.0.0"
     repositories {
         // .. other repositories ..
         maven {
             url "$reclaimStorageUrl"
-        }
-        maven {
-            url 'https://jitpack.io'
-            content { includeGroup "com.github.reclaimprotocol" }
         }
         maven {
             url "$flutterStorageUrl/download.flutter.io"

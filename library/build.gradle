@@ -58,6 +58,8 @@ afterEvaluate {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
                 from components.release
+
+                artifactId = 'reclaim_inapp_sdk'
             }
         }
     }

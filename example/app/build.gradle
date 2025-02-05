@@ -76,5 +76,5 @@ dependencies {
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
 
-    implementation 'com.github.reclaimprotocol:reclaim-inapp-android-sdk:0.1.6'
+    implementation "org.reclaimprotocol:reclaim_inapp_sdk:1.0.0"
 }
