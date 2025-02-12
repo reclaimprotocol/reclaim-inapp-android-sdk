@@ -1,2 +1,7 @@
+VERSION := $(shell cat version)
+ANDROID_DIST_DIR := $(shell pwd)/dist/library/$(VERSION)/repo
+
 build:
-	./gradlew clean -Pgroup=org.reclaimprotocol -Pversion=1.0.0 -xtest -xlint assemble -Dmaven.repo.local=$$(pwd)/library/build/repo publishToMavenLocal
+	echo "Building version $(VERSION)"
+	rm -rf $(ANDROID_DIST_DIR)
+	./gradlew clean -Pgroup=org.reclaimprotocol -Pversion=$(VERSION) -xtest -xlint assemble -Dmaven.repo.local=$(ANDROID_DIST_DIR) publishToMavenLocal
