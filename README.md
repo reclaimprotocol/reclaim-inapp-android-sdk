@@ -15,14 +15,16 @@ This SDK allows you to integrate Reclaim's in-app verification process into your
 
 ## Installation
 
-Add the following repositories to your `settings.gradle` file's repositories block:
+Add the following repositories to your `settings.gradle` file's repositories block or at the end of settings.gradle:
 
 ```groovy
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     String flutterStorageUrl = System.env.FLUTTER_STORAGE_BASE_URL ?: "https://storage.googleapis.com"
     String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/1.0.0/repo"
     repositories {
-        // .. other repositories ..
+        google()
+        mavenCentral()
         maven {
             url "$reclaimStorageUrl"
         }
