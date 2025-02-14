@@ -1,4 +1,4 @@
-package org.reclaimprotocol.reclaim_inapp_sdk_example
+package org.reclaimprotocol.inapp_sdk_example
 
 import org.junit.Test
 

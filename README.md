@@ -21,7 +21,7 @@ Add the following repositories to your `settings.gradle` file's repositories blo
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     String flutterStorageUrl = System.env.FLUTTER_STORAGE_BASE_URL ?: "https://storage.googleapis.com"
-    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/1.0.0/repo"
+    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/0.1.2/repo"
     repositories {
         google()
         mavenCentral()
@@ -40,22 +40,22 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:reclaim_inapp_sdk:1.0.0"
+implementation "org.reclaimprotocol:inapp_sdk:0.1.2"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
 
 ```xml
 <activity
-    android:name="org.reclaimprotocol.reclaim_inapp_sdk.ReclaimActivity"
+    android:name="org.reclaimprotocol.inapp_sdk.ReclaimActivity"
     android:theme="@style/Theme.ReclaimInAppSdk.LaunchTheme"
     android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
     android:hardwareAccelerated="true"
     android:windowSoftInputMode="adjustResize"
     />
-<meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_ID"
+<meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_ID"
     android:value="<YOUR_RECLAIM_APP_ID>" />
-<meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_SECRET"
+<meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_SECRET"
     android:value="<YOUR_RECLAIM_APP_SECRET>" />
 ```
 
@@ -66,7 +66,7 @@ To use ReclaimInAppSdk in your project, follow these steps:
 1. Import the ReclaimInAppSdk module into your Kotlin/Java file.
 
 ```kotlin
-import org.reclaimprotocol.reclaim_inapp_sdk.ReclaimVerification
+import org.reclaimprotocol.inapp_sdk.ReclaimVerification
 ```
 
 2. Create a request object.

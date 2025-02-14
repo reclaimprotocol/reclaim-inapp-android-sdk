@@ -1,4 +1,4 @@
-package org.reclaimprotocol.reclaim_inapp_sdk
+package org.reclaimprotocol.inapp_sdk
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
@@ -45,7 +45,7 @@ public class ReclaimVerification {
          * The Reclaim application ID for the verification process.
          * If not provided, the appId will be fetched from the AndroidManifest.xml metadata along with secret.
          * ```xml
-         * <meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_ID"
+         * <meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_ID"
          *            android:value="<YOUR_RECLAIM_APP_ID>" />
          * ```
          */
@@ -54,7 +54,7 @@ public class ReclaimVerification {
          * The Reclaim application secret for the verification process.
          * If not provided, the secret will be fetched from the AndroidManifest.xml metadata along with appId.
          * ```xml
-         * <meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_SECRET"
+         * <meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_SECRET"
          *            android:value="<YOUR_RECLAIM_APP_SECRET>" />
          * ```
          */
@@ -87,17 +87,17 @@ public class ReclaimVerification {
         val webhookUrl: String? = null
     ) {
         companion object {
-            private const val META_APP_ID = "org.reclaimprotocol.reclaim_inapp_sdk.APP_ID"
-            private const val META_APP_SECRET = "org.reclaimprotocol.reclaim_inapp_sdk.APP_SECRET"
+            private const val META_APP_ID = "org.reclaimprotocol.inapp_sdk.APP_ID"
+            private const val META_APP_SECRET = "org.reclaimprotocol.inapp_sdk.APP_SECRET"
 
             /**
              * Creates a Reclaim Verification Request object using app credentials from AndroidManifest.xml metadata.
-             * 
+             *
              * You must add following metadata to your AndroidManifest.xml:
              * ```xml
-             * <meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_ID"
+             * <meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_ID"
              *            android:value="<YOUR_RECLAIM_APP_ID>" />
-             * <meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_SECRET"
+             * <meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_SECRET"
              *            android:value="<YOUR_RECLAIM_APP_SECRET>" />
              * ```
              *
@@ -115,10 +115,8 @@ public class ReclaimVerification {
                 acceptAiProviders: Boolean = false,
                 webhookUrl: String? = null
             ): Request {
-                val ai: ApplicationInfo = context.packageManager
-                    .getApplicationInfo(
-                        context.packageName,
-                        PackageManager.GET_META_DATA
+                val ai: ApplicationInfo = context.packageManager.getApplicationInfo(
+                        context.packageName, PackageManager.GET_META_DATA
                     )
                 val appId = ai.metaData.getString(META_APP_ID) ?: ""
                 val appSecret = ai.metaData.getString(META_APP_SECRET) ?: ""
@@ -145,7 +143,7 @@ public class ReclaimVerification {
         }
     }
 
-    /** 
+    /**
      * Contains the proof and response data after verification
      */
     public data class Response(
@@ -167,8 +165,7 @@ public class ReclaimVerification {
      * Represents exceptions that can occur during the verification process.
      */
     public sealed class ReclaimVerificationException(
-        val sessionId: String,
-        val didSubmitManualVerification: Boolean
+        val sessionId: String, val didSubmitManualVerification: Boolean
     ) : Exception() {
         public class Cancelled(sessionId: String, didSubmitManualVerification: Boolean) :
             ReclaimVerificationException(sessionId, didSubmitManualVerification)
@@ -180,9 +177,7 @@ public class ReclaimVerification {
             ReclaimVerificationException(sessionId, didSubmitManualVerification)
 
         public class Failed(
-            sessionId: String,
-            didSubmitManualVerification: Boolean,
-            public val reason: String
+            sessionId: String, didSubmitManualVerification: Boolean, public val reason: String
         ) : ReclaimVerificationException(sessionId, didSubmitManualVerification)
     }
 
@@ -194,6 +189,7 @@ public class ReclaimVerification {
          * Called when the verification is successful.
          */
         public fun onResponse(response: Response)
+
         /**
          * Called when an exception occurs during the verification process.
          */
@@ -202,8 +198,8 @@ public class ReclaimVerification {
 
     companion object {
         private fun getModuleApi(context: Context): ReclaimModuleApi {
-            val engine = ReclaimActivity.requireEngine(context)
-            val moduleApi = ReclaimModuleApi(engine.dartExecutor.binaryMessenger)
+            val messenger = ReclaimActivity.requireBinaryMessenger(context)
+            val moduleApi = ReclaimModuleApi(messenger)
             return moduleApi
         }
 
@@ -219,9 +215,7 @@ public class ReclaimVerification {
          * See also [ReclaimVerification.startVerification] which starts the verification process from a Request object.
          */
         public fun startVerificationFromUrl(
-            context: Context,
-            requestUrl: String,
-            handler: ResultHandler
+            context: Context, requestUrl: String, handler: ResultHandler
         ) {
             ReclaimActivity.preWarm(context)
             ReclaimActivity.start(context)
@@ -246,9 +240,7 @@ public class ReclaimVerification {
          * See also [ReclaimVerification.startVerificationFromUrl] which starts the verification process from a URL.
          */
         public fun startVerification(
-            context: Context,
-            request: Request,
-            handler: ResultHandler
+            context: Context, request: Request, handler: ResultHandler
         ) {
             ReclaimActivity.preWarm(context)
             ReclaimActivity.start(context)
@@ -274,59 +266,187 @@ public class ReclaimVerification {
             }
         }
 
+        /**
+         * Configures overrides for the Reclaim verification process.
+         * This method allows customization of various aspects of the verification flow.
+         *
+         * @param context The Android context
+         * @param provider Optional override for provider information configuration
+         *                Use this to override the default provider information from URL or JSON
+         * @param featureOptions Optional override for feature-specific settings
+         *                      Customize behavior like cookie persistence, session timeouts, etc.
+         * @param logConsumer Optional override for logging configuration
+         *                   Configure how logs are handled and whether telemetry is collected
+         * @param sessionManagement Optional override for session management
+         *                         Provide a handler implementation for custom session management
+         * @param appInfo Optional override for application information
+         *               Customize how your app information appears in the verification flow
+         * @param callback Callback to handle the result of setting overrides
+         *                Returns Result<Unit> indicating success or failure
+         *
+         * Example usage:
+         * ```kotlin
+         * ReclaimVerification.setOverrides(
+         *     context = context,
+         *     featureOptions = ReclaimOverrides.FeatureOptions(
+         *         cookiePersist = true,
+         *         singleReclaimRequest = true
+         *     ),
+         *     appInfo = ReclaimOverrides.ReclaimAppInfo(
+         *         appName = "My App",
+         *         appImageUrl = "https://example.com/app-logo.png"
+         *     )
+         * ) { result ->
+         *     result.onSuccess {
+         *         // Overrides set successfully
+         *     }.onFailure { error ->
+         *         // Handle error
+         *     }
+         * }
+         * ```
+         */
+        public fun setOverrides(
+            context: Context,
+            provider: ReclaimOverrides.ProviderInformation.Override? = null,
+            featureOptions: ReclaimOverrides.FeatureOptions? = null,
+            logConsumer: ReclaimOverrides.LogConsumer? = null,
+            sessionManagement: ReclaimOverrides.SessionManagement? = null,
+            appInfo: ReclaimOverrides.ReclaimAppInfo? = null,
+            callback: (Result<Unit>) -> Unit
+        ) {
+            ReclaimActivity.preWarm(context)
+            val moduleApi = getModuleApi(context)
+            val messenger = ReclaimActivity.requireBinaryMessenger(context)
+            ReclaimApi.setUp(
+                binaryMessenger = messenger,
+                api = object : ReclaimApi {
+                    override fun ping(callback: (Result<Boolean>) -> Unit) {
+                        callback(Result.success(true))
+                    }
+
+                    override fun onLogs(logJsonString: String, callback: (Result<Unit>) -> Unit) {
+                        logConsumer?.logHandler?.onLogs(logJsonString)
+                        callback(Result.success(Unit))
+                    }
+
+                    override fun createSession(
+                        appId: String,
+                        providerId: String,
+                        sessionId: String,
+                        callback: (Result<Boolean>) -> Unit
+                    ) {
+                        sessionManagement?.handler?.createSession(
+                            appId = appId,
+                            providerId = providerId,
+                            sessionId = sessionId,
+                            callback = callback
+                        )
+                    }
+
+                    override fun updateSession(
+                        sessionId: String,
+                        status: ReclaimSessionStatus,
+                        callback: (Result<Boolean>) -> Unit
+                    ) {
+                        sessionManagement?.handler?.updateSession(
+                            sessionId = sessionId, status = status, callback = callback
+                        )
+                    }
+
+                    override fun logSession(
+                        appId: String, providerId: String, sessionId: String, logType: String
+                    ) {
+                        sessionManagement?.handler?.logSession(
+                            appId = appId,
+                            providerId = providerId,
+                            sessionId = sessionId,
+                            logType = logType
+                        )
+                    }
+                },
+            )
+            moduleApi.setOverrides(
+                providerArg = if (provider == null) null else ClientProviderInformationOverride(
+                    providerInformationUrl = provider.url,
+                    providerInformationJsonString = provider.jsonString,
+                ),
+                featureArg = if (featureOptions == null) null else ClientFeatureOverrides(
+                    cookiePersist = featureOptions.cookiePersist,
+                    singleReclaimRequest = featureOptions.singleReclaimRequest,
+                    idleTimeThresholdForManualVerificationTrigger = featureOptions.idleTimeThresholdForManualVerificationTrigger,
+                    sessionTimeoutForManualVerificationTrigger = featureOptions.sessionTimeoutForManualVerificationTrigger,
+                    attestorBrowserRpcUrl = featureOptions.attestorBrowserRpcUrl,
+                    isResponseRedactionRegexEscapingEnabled = featureOptions.isResponseRedactionRegexEscapingEnabled,
+                    isAIFlowEnabled = featureOptions.isAIFlowEnabled
+                ),
+                logConsumerArg = if (logConsumer == null) null else ClientLogConsumerOverride(
+                    enableLogHandler = logConsumer.logHandler != null,
+                    canSdkCollectTelemetry = logConsumer.canSdkCollectTelemetry,
+                    canSdkPrintLogs = logConsumer.canSdkPrintLogs
+                ),
+                sessionManagementArg = if (sessionManagement == null) null else ClientReclaimSessionManagementOverride(
+                    // A handler has been provided. We'll not let SDK manage sessions in this case.
+                    // Disabling this lets the host manage sessions.
+                    enableSdkSessionManagement = false
+                ),
+                appInfoArg = if (appInfo == null) null else ClientReclaimAppInfoOverride(
+                    appName = appInfo.appName,
+                    appImageUrl = appInfo.appImageUrl,
+                    isRecurring = appInfo.isRecurring
+                ),
+                callback = callback,
+            )
+        }
+
         private fun onApiResult(
             maybeSessionId: String,
             result: Result<ReclaimApiVerificationResponse>,
             handler: ResultHandler,
         ) {
-            result.fold(
-                onSuccess = { response ->
-                    val exception = response.exception
-                    if (exception == null) {
-                        handler.onResponse(
-                            Response(
-                                sessionId = response.sessionId,
-                                didSubmitManualVerification = response.didSubmitManualVerification,
-                                proofs = response.proofs
-                            )
-                        )
-                    } else {
-                        val returnedException: ReclaimVerificationException =
-                            when (exception.type) {
-                                ReclaimApiVerificationExceptionType.SESSION_EXPIRED -> ReclaimVerificationException.SessionExpired(
-                                    sessionId = response.sessionId,
-                                    didSubmitManualVerification = response.didSubmitManualVerification
-                                )
-
-                                ReclaimApiVerificationExceptionType.VERIFICATION_DISMISSED -> ReclaimVerificationException.Dismissed(
-                                    sessionId = response.sessionId,
-                                    didSubmitManualVerification = response.didSubmitManualVerification
-                                )
-
-                                ReclaimApiVerificationExceptionType.VERIFICATION_CANCELLED -> ReclaimVerificationException.Cancelled(
-                                    sessionId = response.sessionId,
-                                    didSubmitManualVerification = response.didSubmitManualVerification
-                                )
-
-                                ReclaimApiVerificationExceptionType.VERIFICATION_FAILED, ReclaimApiVerificationExceptionType.UNKNOWN -> ReclaimVerificationException.Failed(
-                                    sessionId = response.sessionId,
-                                    didSubmitManualVerification = response.didSubmitManualVerification,
-                                    reason = response.exception.message
-                                )
-                            }
-                        handler.onException(returnedException)
-                    }
-                },
-                onFailure = { error ->
-                    handler.onException(
-                        ReclaimVerificationException.Failed(
-                            sessionId = maybeSessionId,
-                            didSubmitManualVerification = false,
-                            reason = error.message ?: "Unknown error"
+            result.fold(onSuccess = { response ->
+                val exception = response.exception
+                if (exception == null) {
+                    handler.onResponse(
+                        Response(
+                            sessionId = response.sessionId,
+                            didSubmitManualVerification = response.didSubmitManualVerification,
+                            proofs = response.proofs
                         )
                     )
+                } else {
+                    val returnedException: ReclaimVerificationException = when (exception.type) {
+                        ReclaimApiVerificationExceptionType.SESSION_EXPIRED -> ReclaimVerificationException.SessionExpired(
+                            sessionId = response.sessionId,
+                            didSubmitManualVerification = response.didSubmitManualVerification
+                        )
+
+                        ReclaimApiVerificationExceptionType.VERIFICATION_DISMISSED -> ReclaimVerificationException.Dismissed(
+                            sessionId = response.sessionId,
+                            didSubmitManualVerification = response.didSubmitManualVerification
+                        )
+
+                        ReclaimApiVerificationExceptionType.VERIFICATION_CANCELLED -> ReclaimVerificationException.Cancelled(
+                            sessionId = response.sessionId,
+                            didSubmitManualVerification = response.didSubmitManualVerification
+                        )
+
+                        ReclaimApiVerificationExceptionType.VERIFICATION_FAILED, ReclaimApiVerificationExceptionType.UNKNOWN -> ReclaimVerificationException.Failed(
+                            sessionId = response.sessionId,
+                            didSubmitManualVerification = response.didSubmitManualVerification,
+                            reason = response.exception.message
+                        )
+                    }
+                    handler.onException(returnedException)
                 }
-            )
+            }, onFailure = { error ->
+                handler.onException(
+                    ReclaimVerificationException.Failed(
+                        sessionId = maybeSessionId,
+                        didSubmitManualVerification = false,
+                        reason = error.message ?: "Unknown error"
+                    )
+                )
+            })
         }
     }
 }

@@ -13,9 +13,9 @@ This is a complete example of how to use the Reclaim InApp SDK in an Android app
 1. The example project has placeholder values for app id and secret in the metadata element of the AndroidManifest.xml file. Update them with the correct values as per your project from Reclaim Devtools.
 
 ```xml
-<meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_ID"
+<meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_ID"
     android:value="<YOUR_RECLAIM_APP_ID>" />
-<meta-data android:name="org.reclaimprotocol.reclaim_inapp_sdk.APP_SECRET"
+<meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_SECRET"
     android:value="<YOUR_RECLAIM_APP_SECRET>" />
 ```
 2. Build the project and run on a device or simulator.

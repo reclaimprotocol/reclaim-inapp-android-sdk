@@ -1,4 +1,4 @@
-package org.reclaimprotocol.reclaim_inapp_sdk_example
+package org.reclaimprotocol.inapp_sdk_example
 
 import android.content.Context
 import android.os.Bundle
@@ -30,14 +30,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.reclaimprotocol.reclaim_inapp_sdk.ReclaimVerification
-import org.reclaimprotocol.reclaim_inapp_sdk_example.ui.theme.ReclaimInAppSdkExampleTheme
+import org.reclaimprotocol.inapp_sdk.ReclaimOverrides
+import org.reclaimprotocol.inapp_sdk.ReclaimVerification
+import org.reclaimprotocol.inapp_sdk_example.ui.theme.ReclaimInAppSdkExampleTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val context =  applicationContext
+        val context = applicationContext
         enableEdgeToEdge()
+
+        // Advanced Usage: Use ReclaimVerification.setOverrides for overriding sdk
+        ReclaimVerification.setOverrides(
+            context = context,
+            appInfo = ReclaimOverrides.ReclaimAppInfo(
+                appName = "Overriden Example",
+                appImageUrl = "https://placehold.co/400x400/png"
+            )
+        ) {
+            Log.d("MainActivity", "Reclaim Overrides set")
+        }
+
         setContent {
             ReclaimInAppSdkExampleTheme {
                 ExamplePage(

@@ -1,4 +1,4 @@
-package org.reclaimprotocol.reclaim_inapp_sdk_example
+package org.reclaimprotocol.inapp_sdk_example
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("org.reclaimprotocol.reclaim_inapp_sdk_example", appContext.packageName)
+        assertEquals("org.reclaimprotocol.inapp_sdk_example", appContext.packageName)
     }
 }

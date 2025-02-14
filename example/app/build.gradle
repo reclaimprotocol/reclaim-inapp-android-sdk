@@ -15,11 +15,11 @@ def reclaimSdkAppId = localProperties.getProperty('reclaimSdk.appId')
 def reclaimSdkAppSecret = localProperties.getProperty('reclaimSdk.appSecret')
 
 android {
-    namespace 'org.reclaimprotocol.reclaim_inapp_sdk_example'
+    namespace 'org.reclaimprotocol.inapp_sdk_example'
     compileSdk 35
 
     defaultConfig {
-        applicationId "org.reclaimprotocol.reclaim_inapp_sdk_example"
+        applicationId "org.reclaimprotocol.inapp_sdk_example"
         minSdk 21
         targetSdk 35
         versionCode 1
@@ -76,5 +76,6 @@ dependencies {
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
 
-    implementation "org.reclaimprotocol:reclaim_inapp_sdk:1.0.0"
+    //noinspection UseTomlInstead
+    implementation "org.reclaimprotocol:inapp_sdk:0.1.2"
 }

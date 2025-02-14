@@ -1,4 +1,4 @@
-package org.reclaimprotocol.reclaim_inapp_sdk_example.ui.theme
+package org.reclaimprotocol.inapp_sdk_example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

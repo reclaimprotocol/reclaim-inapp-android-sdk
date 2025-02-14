@@ -1,4 +1,4 @@
-package org.reclaimprotocol.reclaim_inapp_sdk
+package org.reclaimprotocol.inapp_sdk
 
 import android.content.Context
 import android.content.Intent
@@ -7,6 +7,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.plugin.common.BinaryMessenger
 
 /**
  * The Reclaim Activity where Reclaim's verification and proof generation takes place.
@@ -14,7 +15,7 @@ import io.flutter.embedding.engine.dart.DartExecutor
  * For using this activity in an android application, add the following in under application in your AndroidManifest.xml
  * ```xml
  * <activity
- *  android:name="org.reclaimprotocol.reclaim_inapp_sdk.ReclaimActivity"
+ *  android:name="org.reclaimprotocol.inapp_sdk.ReclaimActivity"
  *  android:theme="@style/Theme.ReclaimInAppSdk.LaunchTheme"
  *  android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
  *  android:hardwareAccelerated="true"
@@ -27,9 +28,7 @@ public class ReclaimActivity : FlutterActivity() {
         private const val engineId = "reclaim_flutter_engine"
 
         private fun withCachedEngine(cachedEngineId: String): CachedEngineIntentBuilder? {
-            val engine = FlutterEngineCache
-                .getInstance()
-                .get(cachedEngineId)
+            val engine = FlutterEngineCache.getInstance().get(cachedEngineId)
             if (engine == null) {
                 return null
             }
@@ -38,9 +37,7 @@ public class ReclaimActivity : FlutterActivity() {
         }
 
         private fun getEngine(cachedEngineId: String): FlutterEngine? {
-            return FlutterEngineCache
-                .getInstance()
-                .get(cachedEngineId)
+            return FlutterEngineCache.getInstance().get(cachedEngineId)
         }
 
         private fun hasEngine(cachedEngineId: String): Boolean {
@@ -54,9 +51,7 @@ public class ReclaimActivity : FlutterActivity() {
                 DartExecutor.DartEntrypoint.createDefault()
             )
             // Cache the FlutterEngine to be used by FlutterActivity.
-            FlutterEngineCache
-                .getInstance()
-                .put(engineId, engine)
+            FlutterEngineCache.getInstance().put(engineId, engine)
         }
 
         /**
@@ -78,6 +73,11 @@ public class ReclaimActivity : FlutterActivity() {
         public fun requireEngine(context: Context): FlutterEngine {
             preWarm(context)
             return getEngine(engineId)!!
+        }
+
+        public fun requireBinaryMessenger(context: Context): BinaryMessenger {
+            val engine = requireEngine(context)
+            return engine.dartExecutor.binaryMessenger
         }
 
         /**

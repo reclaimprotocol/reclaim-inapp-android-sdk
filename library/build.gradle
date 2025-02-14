@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'org.reclaimprotocol.reclaim_inapp_sdk'
+    namespace 'org.reclaimprotocol.inapp_sdk'
     compileSdk 35
 
     defaultConfig {
@@ -59,7 +59,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                artifactId = 'reclaim_inapp_sdk'
+                artifactId = 'inapp_sdk'
             }
         }
     }
