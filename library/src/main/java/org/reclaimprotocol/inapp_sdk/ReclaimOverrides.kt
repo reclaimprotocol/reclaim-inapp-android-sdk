@@ -5,6 +5,7 @@ public class ReclaimOverrides {
         interface Override {
             val url: String?
             val jsonString: String?
+            val callback: FromCallbackHandler?
         }
 
         /**
@@ -13,6 +14,7 @@ public class ReclaimOverrides {
          */
         data class FromUrl(override val url: String) : Override {
             override val jsonString: String? = null
+            override val callback: FromCallbackHandler? = null
         }
 
         /**
@@ -20,6 +22,26 @@ public class ReclaimOverrides {
          */
         data class FromJsonString(override val jsonString: String) : Override {
             override val url: String? = null
+            override val callback: FromCallbackHandler? = null
+        }
+
+        /**
+         * Represents a provider information override using callback handler.
+         */
+        data class FromCallback(override val callback: FromCallbackHandler) : Override {
+            override val jsonString: String? = null
+            override val url: String? = null
+        }
+
+        public interface FromCallbackHandler {
+            public fun fetchProviderInformation(
+                appId: String,
+                providerId: String,
+                sessionId: String,
+                signature: String,
+                timestamp: String,
+                callback: (Result<Map<String, Any?>>) -> Unit
+            )
         }
     }
 
@@ -84,4 +106,8 @@ public class ReclaimOverrides {
         val appImageUrl: String,
         val isRecurring: Boolean = false
     )
+
+    public interface SessionIdentityUpdateHandler {
+        public fun onSessionIdentityUpdate(identity: ReclaimVerification.ReclaimSessionIdentity)
+    }
 }

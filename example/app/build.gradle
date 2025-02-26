@@ -35,6 +35,8 @@ android {
 
             resValue "string", "RECLAIM_SDK_APP_ID", System.env.RECLAIM_SDK_APP_ID ?: reclaimSdkAppId
             resValue "string", "RECLAIM_SDK_APP_SECRET", System.env.RECLAIM_SDK_APP_SECRET ?: reclaimSdkAppSecret
+
+            signingConfig = signingConfigs.debug
         }
         debug {
             resValue "string", "RECLAIM_SDK_APP_ID", System.env.RECLAIM_SDK_APP_ID ?: reclaimSdkAppId
@@ -77,5 +79,5 @@ dependencies {
     debugImplementation libs.androidx.ui.test.manifest
 
     //noinspection UseTomlInstead
-    implementation "org.reclaimprotocol:inapp_sdk:0.1.2"
+    implementation "org.reclaimprotocol:inapp_sdk:0.2.0"
 }

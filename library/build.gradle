@@ -37,6 +37,18 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+    String flutterStorageUrl = System.env.FLUTTER_STORAGE_BASE_URL ?: "https://storage.googleapis.com"
+    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/0.2.0/repo"
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "$reclaimStorageUrl"
+        }
+        maven {
+            url "$flutterStorageUrl/download.flutter.io"
+        }
+    }
 }
 
 dependencies {

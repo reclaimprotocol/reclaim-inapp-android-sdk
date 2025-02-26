@@ -9,6 +9,17 @@ import android.content.pm.PackageManager
  * for proving claims about user data through various providers.
  */
 public class ReclaimVerification {
+    public object ReclaimSessionIdentity {
+        public var appId: String = ""
+            internal set
+
+        public var sessionId: String = ""
+            internal set
+
+        public var providerId: String = ""
+            internal set
+    }
+
     /**
      * Represents user's session information for a verification attempt.
      * This data class contains the necessary data to identify and validate a verification session.
@@ -224,7 +235,7 @@ public class ReclaimVerification {
                 requestUrl
             ) { result ->
                 ReclaimActivity.closeAll()
-                onApiResult("", result, handler)
+                onApiResult(ReclaimSessionIdentity.sessionId, result, handler)
             }
         }
 
@@ -255,16 +266,17 @@ public class ReclaimVerification {
                     context = request.contextString,
                     sessionId = request.session?.sessionId ?: "",
                     parameters = request.parameters,
-                    hideLanding = request.hideLanding,
                     autoSubmit = request.autoSubmit,
                     acceptAiProviders = request.acceptAiProviders,
                     webhookUrl = request.webhookUrl
                 )
             ) { result ->
                 ReclaimActivity.closeAll()
-                onApiResult(request.session?.sessionId ?: "", result, handler)
+                onApiResult(ReclaimSessionIdentity.sessionId.ifBlank { request.session?.sessionId ?: "" }, result, handler)
             }
         }
+
+        var previousReclaimApiImpl: ReclaimApi? = null
 
         /**
          * Configures overrides for the Reclaim verification process.
@@ -312,63 +324,170 @@ public class ReclaimVerification {
             logConsumer: ReclaimOverrides.LogConsumer? = null,
             sessionManagement: ReclaimOverrides.SessionManagement? = null,
             appInfo: ReclaimOverrides.ReclaimAppInfo? = null,
+            capabilityAccessToken: String? = null,
+            sessionIdentityUpdateHandler: ReclaimOverrides.SessionIdentityUpdateHandler? = null,
             callback: (Result<Unit>) -> Unit
         ) {
             ReclaimActivity.preWarm(context)
             val moduleApi = getModuleApi(context)
             val messenger = ReclaimActivity.requireBinaryMessenger(context)
+            val currentReclaimApi = object : ReclaimApi {
+                var previousApi: ReclaimApi? = null
+
+                override fun ping(callback: (Result<Boolean>) -> Unit) {
+                    callback(Result.success(true))
+                }
+
+                override fun onLogs(logJsonString: String, callback: (Result<Unit>) -> Unit) {
+                    logConsumer?.logHandler?.onLogs(logJsonString)
+                    if (logConsumer == null) {
+                        val api = previousApi
+                        if (api != null) {
+                            return api.onLogs(logJsonString, callback)
+                        }
+                    }
+                    callback(Result.success(Unit))
+                }
+
+                override fun createSession(
+                    appId: String,
+                    providerId: String,
+                    sessionId: String,
+                    callback: (Result<Boolean>) -> Unit
+                ) {
+                    sessionManagement?.handler?.createSession(
+                        appId = appId,
+                        providerId = providerId,
+                        sessionId = sessionId,
+                        callback = callback
+                    )
+                    if (sessionManagement == null) {
+                        val api = previousApi
+                        if (api != null) {
+                            return api.createSession(
+                                appId = appId,
+                                providerId = providerId,
+                                sessionId = sessionId,
+                                callback = callback
+                            )
+                        }
+                    }
+                }
+
+                override fun updateSession(
+                    sessionId: String,
+                    status: ReclaimSessionStatus,
+                    callback: (Result<Boolean>) -> Unit
+                ) {
+                    sessionManagement?.handler?.updateSession(
+                        sessionId = sessionId, status = status, callback = callback
+                    )
+                    if (sessionManagement == null) {
+                        val api = previousApi
+                        if (api != null) {
+                            return api.updateSession(
+                                sessionId = sessionId,
+                                status = status,
+                                callback = callback
+                            )
+                        }
+                    }
+                }
+
+                override fun logSession(
+                    appId: String,
+                    providerId: String,
+                    sessionId: String,
+                    logType: String,
+                    callback: (Result<Unit>) -> Unit
+                ) {
+                    sessionManagement?.handler?.logSession(
+                        appId = appId,
+                        providerId = providerId,
+                        sessionId = sessionId,
+                        logType = logType
+                    )
+                    if (sessionManagement == null) {
+                        val api = previousApi
+                        if (api != null) {
+                            return api.logSession(
+                                appId = appId,
+                                providerId = providerId,
+                                sessionId = sessionId,
+                                logType = logType,
+                                callback = callback
+                            )
+                        }
+                    }
+                    callback(Result.success(Unit))
+                }
+
+                override fun onSessionIdentityUpdate(
+                    update: ReclaimSessionIdentityUpdate?,
+                    callback: (Result<Unit>) -> Unit
+                ) {
+                    ReclaimSessionIdentity.appId = update?.appId ?: ""
+                    ReclaimSessionIdentity.sessionId = update?.sessionId ?: ""
+                    ReclaimSessionIdentity.providerId = update?.providerId ?: ""
+                    sessionIdentityUpdateHandler?.onSessionIdentityUpdate(ReclaimSessionIdentity)
+                    if (sessionIdentityUpdateHandler == null) {
+                        val api = previousApi
+                        if (api != null) {
+                            return api.onSessionIdentityUpdate(
+                                update = update,
+                                callback = callback
+                            )
+                        }
+                    }
+                }
+
+                override fun fetchProviderInformation(
+                    appId: String,
+                    providerId: String,
+                    sessionId: String,
+                    signature: String,
+                    timestamp: String,
+                    callback: (Result<Map<String, Any?>>) -> Unit
+                ) {
+                    val handler = provider?.callback
+                    if (handler == null) {
+                        if (provider == null) {
+                            val api = previousApi
+                            if (api != null) {
+                                return api.fetchProviderInformation(
+                                    appId = appId,
+                                    providerId = providerId,
+                                    sessionId = sessionId,
+                                    signature = signature,
+                                    timestamp = timestamp,
+                                    callback = callback
+                                )
+                            }
+                        }
+                        callback(Result.failure(Exception("No callback provided")))
+                        return
+                    }
+                    handler.fetchProviderInformation(
+                        appId = appId,
+                        providerId = providerId,
+                        sessionId = sessionId,
+                        signature = signature,
+                        timestamp = timestamp,
+                        callback = callback
+                    )
+                }
+            }
+            currentReclaimApi.previousApi = previousReclaimApiImpl
             ReclaimApi.setUp(
                 binaryMessenger = messenger,
-                api = object : ReclaimApi {
-                    override fun ping(callback: (Result<Boolean>) -> Unit) {
-                        callback(Result.success(true))
-                    }
-
-                    override fun onLogs(logJsonString: String, callback: (Result<Unit>) -> Unit) {
-                        logConsumer?.logHandler?.onLogs(logJsonString)
-                        callback(Result.success(Unit))
-                    }
-
-                    override fun createSession(
-                        appId: String,
-                        providerId: String,
-                        sessionId: String,
-                        callback: (Result<Boolean>) -> Unit
-                    ) {
-                        sessionManagement?.handler?.createSession(
-                            appId = appId,
-                            providerId = providerId,
-                            sessionId = sessionId,
-                            callback = callback
-                        )
-                    }
-
-                    override fun updateSession(
-                        sessionId: String,
-                        status: ReclaimSessionStatus,
-                        callback: (Result<Boolean>) -> Unit
-                    ) {
-                        sessionManagement?.handler?.updateSession(
-                            sessionId = sessionId, status = status, callback = callback
-                        )
-                    }
-
-                    override fun logSession(
-                        appId: String, providerId: String, sessionId: String, logType: String
-                    ) {
-                        sessionManagement?.handler?.logSession(
-                            appId = appId,
-                            providerId = providerId,
-                            sessionId = sessionId,
-                            logType = logType
-                        )
-                    }
-                },
+                api = currentReclaimApi,
             )
+            previousReclaimApiImpl = currentReclaimApi
             moduleApi.setOverrides(
                 providerArg = if (provider == null) null else ClientProviderInformationOverride(
                     providerInformationUrl = provider.url,
                     providerInformationJsonString = provider.jsonString,
+                    canFetchProviderInformationFromHost = provider.callback != null,
                 ),
                 featureArg = if (featureOptions == null) null else ClientFeatureOverrides(
                     cookiePersist = featureOptions.cookiePersist,
@@ -394,8 +513,21 @@ public class ReclaimVerification {
                     appImageUrl = appInfo.appImageUrl,
                     isRecurring = appInfo.isRecurring
                 ),
+                capabilityAccessTokenArg = capabilityAccessToken,
                 callback = callback,
             )
+        }
+
+        public fun clearAllOverrides(
+            context: Context,
+            callback: (Result<Unit>) -> Unit
+        ) {
+            ReclaimActivity.preWarm(context)
+            val moduleApi = getModuleApi(context)
+            moduleApi.clearAllOverrides {
+                previousReclaimApiImpl = null
+                callback(Result.success(Unit))
+            }
         }
 
         private fun onApiResult(

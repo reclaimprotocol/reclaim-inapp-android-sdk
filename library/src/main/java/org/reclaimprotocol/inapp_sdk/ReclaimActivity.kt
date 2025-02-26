@@ -25,7 +25,7 @@ import io.flutter.plugin.common.BinaryMessenger
  */
 public class ReclaimActivity : FlutterActivity() {
     companion object {
-        private const val engineId = "reclaim_flutter_engine"
+        private const val CACHED_ENGINE_ID = "reclaim_flutter_engine"
 
         private fun withCachedEngine(cachedEngineId: String): CachedEngineIntentBuilder? {
             val engine = FlutterEngineCache.getInstance().get(cachedEngineId)
@@ -51,7 +51,7 @@ public class ReclaimActivity : FlutterActivity() {
                 DartExecutor.DartEntrypoint.createDefault()
             )
             // Cache the FlutterEngine to be used by FlutterActivity.
-            FlutterEngineCache.getInstance().put(engineId, engine)
+            FlutterEngineCache.getInstance().put(CACHED_ENGINE_ID, engine)
         }
 
         /**
@@ -59,7 +59,7 @@ public class ReclaimActivity : FlutterActivity() {
          * Calling this method in advance is recommended to avoid the first launch of the ReclaimActivity from being slow.
          */
         public fun preWarm(context: Context) {
-            if (hasEngine(engineId)) {
+            if (hasEngine(CACHED_ENGINE_ID)) {
                 return
             }
             // Instantiate a FlutterEngine.
@@ -72,7 +72,7 @@ public class ReclaimActivity : FlutterActivity() {
          */
         public fun requireEngine(context: Context): FlutterEngine {
             preWarm(context)
-            return getEngine(engineId)!!
+            return getEngine(CACHED_ENGINE_ID)!!
         }
 
         public fun requireBinaryMessenger(context: Context): BinaryMessenger {
@@ -86,7 +86,7 @@ public class ReclaimActivity : FlutterActivity() {
          */
         public fun start(context: Context) {
             preWarm(context)
-            val engineIntentBuilder = withCachedEngine(engineId)!!
+            val engineIntentBuilder = withCachedEngine(CACHED_ENGINE_ID)!!
             val intent = engineIntentBuilder.build(context)
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)

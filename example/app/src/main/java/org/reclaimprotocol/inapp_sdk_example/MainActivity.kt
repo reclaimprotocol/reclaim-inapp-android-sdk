@@ -117,7 +117,7 @@ fun ExamplePage(
                         context = context,
                         request = ReclaimVerification.Request.fromManifestMetaData(
                             context = context,
-                            providerId = providerIdText
+                            providerId = providerIdText,
                         ),
                         handler = object : ReclaimVerification.ResultHandler {
                             override fun onException(exception: ReclaimVerification.ReclaimVerificationException) {
