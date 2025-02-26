@@ -215,6 +215,14 @@ public class ReclaimVerification {
         }
 
         /**
+         * This instantiates and caches the backend used by the ReclaimActivity.
+         * Calling this method in advance is recommended to avoid the first launch of the ReclaimActivity from being slow.
+         */
+        public fun preWarm(context: Context) {
+            ReclaimActivity.preWarm(context = context)
+        }
+
+        /**
          * Starts the verification process from a URL.
          * Initiates the verification process by presenting a full-screen interface.
          * This method handles the entire verification flow, including:
@@ -228,7 +236,7 @@ public class ReclaimVerification {
         public fun startVerificationFromUrl(
             context: Context, requestUrl: String, handler: ResultHandler
         ) {
-            ReclaimActivity.preWarm(context)
+            preWarm(context)
             ReclaimActivity.start(context)
             val moduleApi = getModuleApi(context)
             moduleApi.startVerificationFromUrl(
@@ -253,7 +261,7 @@ public class ReclaimVerification {
         public fun startVerification(
             context: Context, request: Request, handler: ResultHandler
         ) {
-            ReclaimActivity.preWarm(context)
+            preWarm(context)
             ReclaimActivity.start(context)
             val moduleApi = getModuleApi(context)
             moduleApi.startVerification(
@@ -328,7 +336,7 @@ public class ReclaimVerification {
             sessionIdentityUpdateHandler: ReclaimOverrides.SessionIdentityUpdateHandler? = null,
             callback: (Result<Unit>) -> Unit
         ) {
-            ReclaimActivity.preWarm(context)
+            preWarm(context)
             val moduleApi = getModuleApi(context)
             val messenger = ReclaimActivity.requireBinaryMessenger(context)
             val currentReclaimApi = object : ReclaimApi {
@@ -522,7 +530,7 @@ public class ReclaimVerification {
             context: Context,
             callback: (Result<Unit>) -> Unit
         ) {
-            ReclaimActivity.preWarm(context)
+            preWarm(context)
             val moduleApi = getModuleApi(context)
             moduleApi.clearAllOverrides {
                 previousReclaimApiImpl = null

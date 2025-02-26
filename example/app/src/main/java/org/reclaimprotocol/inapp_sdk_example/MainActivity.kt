@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val context = applicationContext
         enableEdgeToEdge()
+        ReclaimVerification.preWarm(context)
 
         // Advanced Usage: Use ReclaimVerification.setOverrides for overriding sdk
         ReclaimVerification.setOverrides(
