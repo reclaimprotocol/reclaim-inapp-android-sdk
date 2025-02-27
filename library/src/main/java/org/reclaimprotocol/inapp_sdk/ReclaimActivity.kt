@@ -27,21 +27,21 @@ public class ReclaimActivity : FlutterActivity() {
     companion object {
         private const val CACHED_ENGINE_ID = "reclaim_flutter_engine"
 
-        private fun withCachedEngine(cachedEngineId: String): CachedEngineIntentBuilder? {
-            val engine = FlutterEngineCache.getInstance().get(cachedEngineId)
+        private fun withCachedEngineIntentBuilder(): CachedEngineIntentBuilder? {
+            val engine = FlutterEngineCache.getInstance().get(CACHED_ENGINE_ID)
             if (engine == null) {
                 return null
             }
 
-            return CachedEngineIntentBuilder(ReclaimActivity::class.java, cachedEngineId)
+            return CachedEngineIntentBuilder(ReclaimActivity::class.java, CACHED_ENGINE_ID)
         }
 
-        private fun getEngine(cachedEngineId: String): FlutterEngine? {
-            return FlutterEngineCache.getInstance().get(cachedEngineId)
+        private fun getEngine(): FlutterEngine? {
+            return FlutterEngineCache.getInstance().get(CACHED_ENGINE_ID)
         }
 
-        private fun hasEngine(cachedEngineId: String): Boolean {
-            return getEngine(cachedEngineId) != null
+        private fun hasEngine(): Boolean {
+            return getEngine() != null
         }
 
         private fun setupEngine(engine: FlutterEngine) {
@@ -59,7 +59,7 @@ public class ReclaimActivity : FlutterActivity() {
          * Calling this method in advance is recommended to avoid the first launch of the ReclaimActivity from being slow.
          */
         public fun preWarm(context: Context) {
-            if (hasEngine(CACHED_ENGINE_ID)) {
+            if (hasEngine()) {
                 return
             }
             // Instantiate a FlutterEngine.
@@ -72,7 +72,7 @@ public class ReclaimActivity : FlutterActivity() {
          */
         public fun requireEngine(context: Context): FlutterEngine {
             preWarm(context)
-            return getEngine(CACHED_ENGINE_ID)!!
+            return getEngine()!!
         }
 
         public fun requireBinaryMessenger(context: Context): BinaryMessenger {
@@ -86,7 +86,7 @@ public class ReclaimActivity : FlutterActivity() {
          */
         public fun start(context: Context) {
             preWarm(context)
-            val engineIntentBuilder = withCachedEngine(CACHED_ENGINE_ID)!!
+            val engineIntentBuilder = withCachedEngineIntentBuilder()!!
             val intent = engineIntentBuilder.build(context)
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
@@ -106,11 +106,11 @@ public class ReclaimActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ReclaimActivity.instances.add(this)
+        instances.add(this)
     }
 
     override fun finish() {
         super.finish()
-        ReclaimActivity.instances.remove(this)
+        instances.remove(this)
     }
 }

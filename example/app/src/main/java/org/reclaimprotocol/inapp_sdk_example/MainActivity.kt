@@ -3,6 +3,7 @@ package org.reclaimprotocol.inapp_sdk_example
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -48,8 +49,15 @@ class MainActivity : ComponentActivity() {
                 appName = "Overriden Example",
                 appImageUrl = "https://placehold.co/400x400/png"
             )
-        ) {
-            Log.d("MainActivity", "Reclaim Overrides set")
+        ) { result ->
+            result
+                .onSuccess {
+                    Log.d("MainActivity", "Reclaim Overrides set")
+                }
+                .onFailure { throwable ->
+                    Log.e("MainActivity", "Could not set overrides", throwable)
+                    Toast.makeText(context, "Could not set overrides", Toast.LENGTH_LONG).show()
+                }
         }
 
         setContent {
