@@ -5,7 +5,7 @@ public class ReclaimOverrides {
         public interface Override {
             public val url: String?
             public val jsonString: String?
-            public val callback: FromCallbackHandler?
+            public val callback: FromCallback.Handler?
         }
 
         /**
@@ -14,7 +14,7 @@ public class ReclaimOverrides {
          */
         public data class FromUrl(override val url: String) : Override {
             public override val jsonString: String? = null
-            public override val callback: FromCallbackHandler? = null
+            public override val callback: FromCallback.Handler? = null
         }
 
         /**
@@ -22,27 +22,28 @@ public class ReclaimOverrides {
          */
         public data class FromJsonString(override val jsonString: String) : Override {
             public override val url: String? = null
-            public override val callback: FromCallbackHandler? = null
+            public override val callback: FromCallback.Handler? = null
         }
 
         /**
          * Represents a provider information override using callback handler.
          */
-        public data class FromCallback(override val callback: FromCallbackHandler) : Override {
+        public data class FromCallback(override val callback: FromCallback.Handler) : Override {
             public override val jsonString: String? = null
             public override val url: String? = null
+
+            public interface Handler {
+                public fun fetchProviderInformation(
+                    appId: String,
+                    providerId: String,
+                    sessionId: String,
+                    signature: String,
+                    timestamp: String,
+                    callback: (Result<String>) -> Unit
+                )
+            }
         }
 
-        public interface FromCallbackHandler {
-            public fun fetchProviderInformation(
-                appId: String,
-                providerId: String,
-                sessionId: String,
-                signature: String,
-                timestamp: String,
-                callback: (Result<String>) -> Unit
-            )
-        }
     }
 
     public data class FeatureOptions(
