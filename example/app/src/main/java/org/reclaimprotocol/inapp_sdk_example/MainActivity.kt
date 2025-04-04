@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
 fun ExamplePage(
     context: Context
 ) {
-    var providerIdText by remember { mutableStateOf("6d3f6753-7ee6-49ee-a545-62f1b1822ae5") }
+    var providerIdText by remember { mutableStateOf("example") }
     var resultText by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()

@@ -52,7 +52,6 @@ public class ReclaimOverrides {
         public val idleTimeThresholdForManualVerificationTrigger: Long? = null,
         public val sessionTimeoutForManualVerificationTrigger: Long? = null,
         public val attestorBrowserRpcUrl: String? = null,
-        public val isResponseRedactionRegexEscapingEnabled: Boolean? = null,
         public val isAIFlowEnabled: Boolean? = null
     )
 

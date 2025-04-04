@@ -386,7 +386,6 @@ public class ReclaimVerification {
                     idleTimeThresholdForManualVerificationTrigger = featureOptions.idleTimeThresholdForManualVerificationTrigger,
                     sessionTimeoutForManualVerificationTrigger = featureOptions.sessionTimeoutForManualVerificationTrigger,
                     attestorBrowserRpcUrl = featureOptions.attestorBrowserRpcUrl,
-                    isResponseRedactionRegexEscapingEnabled = featureOptions.isResponseRedactionRegexEscapingEnabled,
                     isAIFlowEnabled = featureOptions.isAIFlowEnabled
                 ),
                 logConsumerArg = if (logConsumer == null) null else ClientLogConsumerOverride(

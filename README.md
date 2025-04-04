@@ -21,7 +21,7 @@ Add the following repositories to your `settings.gradle` file's repositories blo
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     String flutterStorageUrl = System.env.FLUTTER_STORAGE_BASE_URL ?: "https://storage.googleapis.com"
-    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/0.3.0/repo"
+    String reclaimStorageUrl = System.env.RECLAIM_STORAGE_BASE_URL ?: "https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/repo"
     repositories {
         google()
         mavenCentral()
@@ -40,7 +40,7 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:inapp_sdk:0.3.0"
+implementation "org.reclaimprotocol:inapp_sdk:0.4.0"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
@@ -57,6 +57,29 @@ Add the following to your app level `AndroidManifest.xml` file under the `<appli
     android:value="<YOUR_RECLAIM_APP_ID>" />
 <meta-data android:name="org.reclaimprotocol.inapp_sdk.APP_SECRET"
     android:value="<YOUR_RECLAIM_APP_SECRET>" />
+```
+
+Add the following permission in your app's AndroidManifest.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- START optional permissions that can be used by the Reclaim Inapp SDK -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Permissions options for the `location` group -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Permissions options for the `microphone` or `speech` group -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Permissions options for the `camera` group -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- App can request to ignore battery optimizations -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- END optional permissions -->
+    <!-- Other configurations (Removed for brevity) -->
+</manifest>
 ```
 
 ## Usage
