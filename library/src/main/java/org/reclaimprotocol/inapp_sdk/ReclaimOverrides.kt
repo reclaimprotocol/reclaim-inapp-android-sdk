@@ -82,8 +82,9 @@ public class ReclaimOverrides {
             public fun createSession(
                 appId: String,
                 providerId: String,
-                sessionId: String,
-                callback: (Result<Boolean>) -> Unit
+                timestamp: String,
+                signature: String,
+                callback: (Result<String>) -> Unit
             )
 
             public fun updateSession(
@@ -91,7 +92,7 @@ public class ReclaimOverrides {
             )
 
             public fun logSession(
-                appId: String, providerId: String, sessionId: String, logType: String
+                appId: String, providerId: String, sessionId: String, logType: String, metadata: Map<String, Any?>?
             )
         }
     }
