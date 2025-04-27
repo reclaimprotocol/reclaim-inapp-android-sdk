@@ -175,12 +175,25 @@ public class ReclaimVerification {
          */
         public val canDeleteCookiesBeforeVerificationStarts: Boolean = true,
         public val attestorAuthRequestProvider: AttestorAuthRequestProvider? = null,
+        public val claimCreationType: ClaimCreationType = ClaimCreationType.STANDALONE,
     ) {
         public interface AttestorAuthRequestProvider {
             public fun fetchAttestorAuthenticationRequest(
                 reclaimHttpProvider: Map<Any?, Any?>,
                 callback: (Result<String>) -> Unit
             )
+        }
+
+        public enum class ClaimCreationType() {
+            STANDALONE,
+            ON_ME_CHAIN;
+
+            internal fun toApi(): ClaimCreationTypeApi {
+                return when(this) {
+                    STANDALONE -> ClaimCreationTypeApi.STANDALONE
+                    ON_ME_CHAIN -> ClaimCreationTypeApi.ON_ME_CHAIN
+                }
+            }
         }
     }
 
@@ -447,7 +460,8 @@ public class ReclaimVerification {
                 hostApi.attestorAuthRequestProvider = provider
                 moduleApi.setVerificationOptions(ReclaimApiVerificationOptions(
                     canDeleteCookiesBeforeVerificationStarts = options.canDeleteCookiesBeforeVerificationStarts,
-                    canUseAttestorAuthenticationRequest = provider != null
+                    canUseAttestorAuthenticationRequest = provider != null,
+                    claimCreationType = options.claimCreationType.toApi(),
                 )) { result ->
                     callback(result)
                 }
@@ -553,13 +567,15 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
     override fun createSession(
         appId: String,
         providerId: String,
-        sessionId: String,
-        callback: (Result<Boolean>) -> Unit
+        timestamp: String,
+        signature: String,
+        callback: (Result<String>) -> Unit
     ) {
         sessionHandler?.createSession(
             appId = appId,
             providerId = providerId,
-            sessionId = sessionId,
+            timestamp = timestamp,
+            signature = signature,
             callback = callback
         )
     }
@@ -581,13 +597,15 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
         providerId: String,
         sessionId: String,
         logType: String,
+        metadata: Map<String, Any?>?,
         callback: (Result<Unit>) -> Unit
     ) {
         sessionHandler?.logSession(
             appId = appId,
             providerId = providerId,
             sessionId = sessionId,
-            logType = logType
+            logType = logType,
+            metadata = metadata,
         )
         callback(Result.success(Unit))
     }
