@@ -8,12 +8,11 @@ package org.reclaimprotocol.inapp_sdk
 import android.util.Log
 import io.flutter.plugin.common.BasicMessageChannel
 import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MessageCodec
-import io.flutter.plugin.common.StandardMethodCodec
 import io.flutter.plugin.common.StandardMessageCodec
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+
 private object MessagesPigeonUtils {
 
   fun createConnectionError(channelName: String): FlutterError {
@@ -40,34 +39,34 @@ private object MessagesPigeonUtils {
   }
   fun deepEquals(a: Any?, b: Any?): Boolean {
     if (a is ByteArray && b is ByteArray) {
-        return a.contentEquals(b)
+      return a.contentEquals(b)
     }
     if (a is IntArray && b is IntArray) {
-        return a.contentEquals(b)
+      return a.contentEquals(b)
     }
     if (a is LongArray && b is LongArray) {
-        return a.contentEquals(b)
+      return a.contentEquals(b)
     }
     if (a is DoubleArray && b is DoubleArray) {
-        return a.contentEquals(b)
+      return a.contentEquals(b)
     }
     if (a is Array<*> && b is Array<*>) {
       return a.size == b.size &&
-          a.indices.all{ deepEquals(a[it], b[it]) }
+              a.indices.all{ deepEquals(a[it], b[it]) }
     }
     if (a is List<*> && b is List<*>) {
       return a.size == b.size &&
-          a.indices.all{ deepEquals(a[it], b[it]) }
+              a.indices.all{ deepEquals(a[it], b[it]) }
     }
     if (a is Map<*, *> && b is Map<*, *>) {
       return a.size == b.size && a.all {
-          (b as Map<Any?, Any?>).containsKey(it.key) &&
-          deepEquals(it.value, b[it.key])
+        (b as Map<Any?, Any?>).containsKey(it.key) &&
+                deepEquals(it.value, b[it.key])
       }
     }
     return a == b
   }
-      
+
 }
 
 /**
@@ -116,7 +115,7 @@ enum class ReclaimSessionStatus(val raw: Int) {
 
 enum class ClaimCreationTypeApi(val raw: Int) {
   STANDALONE(0),
-  ON_ME_CHAIN(1);
+  ME_CHAIN(1);
 
   companion object {
     fun ofRaw(raw: Int): ClaimCreationTypeApi? {
@@ -135,11 +134,10 @@ data class ReclaimApiVerificationRequest (
   val context: String,
   val sessionId: String,
   val parameters: Map<String, String>,
-  val autoSubmit: Boolean,
   val acceptAiProviders: Boolean,
   val webhookUrl: String? = null
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ReclaimApiVerificationRequest {
       val appId = pigeonVar_list[0] as String
@@ -150,10 +148,9 @@ data class ReclaimApiVerificationRequest (
       val context = pigeonVar_list[5] as String
       val sessionId = pigeonVar_list[6] as String
       val parameters = pigeonVar_list[7] as Map<String, String>
-      val autoSubmit = pigeonVar_list[8] as Boolean
-      val acceptAiProviders = pigeonVar_list[9] as Boolean
-      val webhookUrl = pigeonVar_list[10] as String?
-      return ReclaimApiVerificationRequest(appId, providerId, secret, signature, timestamp, context, sessionId, parameters, autoSubmit, acceptAiProviders, webhookUrl)
+      val acceptAiProviders = pigeonVar_list[8] as Boolean
+      val webhookUrl = pigeonVar_list[9] as String?
+      return ReclaimApiVerificationRequest(appId, providerId, secret, signature, timestamp, context, sessionId, parameters, acceptAiProviders, webhookUrl)
     }
   }
   fun toList(): List<Any?> {
@@ -166,7 +163,6 @@ data class ReclaimApiVerificationRequest (
       context,
       sessionId,
       parameters,
-      autoSubmit,
       acceptAiProviders,
       webhookUrl,
     )
@@ -189,7 +185,7 @@ data class ReclaimApiVerificationException (
   val stackTraceAsString: String,
   val type: ReclaimApiVerificationExceptionType
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ReclaimApiVerificationException {
       val message = pigeonVar_list[0] as String
@@ -224,7 +220,7 @@ data class ReclaimApiVerificationResponse (
   val proofs: List<Map<String, Any?>>,
   val exception: ReclaimApiVerificationException? = null
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ReclaimApiVerificationResponse {
       val sessionId = pigeonVar_list[0] as String
@@ -260,7 +256,7 @@ data class ClientProviderInformationOverride (
   val providerInformationJsonString: String? = null,
   val canFetchProviderInformationFromHost: Boolean
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ClientProviderInformationOverride {
       val providerInformationUrl = pigeonVar_list[0] as String?
@@ -297,7 +293,7 @@ data class ClientFeatureOverrides (
   val attestorBrowserRpcUrl: String? = null,
   val isAIFlowEnabled: Boolean? = null
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ClientFeatureOverrides {
       val cookiePersist = pigeonVar_list[0] as Boolean?
@@ -337,7 +333,7 @@ data class ClientLogConsumerOverride (
   val canSdkCollectTelemetry: Boolean,
   val canSdkPrintLogs: Boolean? = null
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ClientLogConsumerOverride {
       val enableLogHandler = pigeonVar_list[0] as Boolean
@@ -369,7 +365,7 @@ data class ClientLogConsumerOverride (
 data class ClientReclaimSessionManagementOverride (
   val enableSdkSessionManagement: Boolean
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ClientReclaimSessionManagementOverride {
       val enableSdkSessionManagement = pigeonVar_list[0] as Boolean
@@ -399,7 +395,7 @@ data class ClientReclaimAppInfoOverride (
   val appImageUrl: String,
   val isRecurring: Boolean
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ClientReclaimAppInfoOverride {
       val appName = pigeonVar_list[0] as String
@@ -440,7 +436,7 @@ data class ReclaimSessionIdentityUpdate (
   /** The session id. */
   val sessionId: String
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ReclaimSessionIdentityUpdate {
       val appId = pigeonVar_list[0] as String
@@ -481,15 +477,27 @@ data class ReclaimApiVerificationOptions (
    * {@macro CreateClaimOptions.attestorAuthenticationRequest}
    */
   val canUseAttestorAuthenticationRequest: Boolean,
-  val claimCreationType: ClaimCreationTypeApi
+  val claimCreationType: ClaimCreationTypeApi,
+  /**
+   * Whether module can auto submit the claim.
+   * Defaults to true.
+   */
+  val canAutoSubmit: Boolean,
+  /**
+   * Whether the close button is visible.
+   * Defaults to true.
+   */
+  val isCloseButtonVisible: Boolean
 )
- {
+{
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ReclaimApiVerificationOptions {
       val canDeleteCookiesBeforeVerificationStarts = pigeonVar_list[0] as Boolean
       val canUseAttestorAuthenticationRequest = pigeonVar_list[1] as Boolean
       val claimCreationType = pigeonVar_list[2] as ClaimCreationTypeApi
-      return ReclaimApiVerificationOptions(canDeleteCookiesBeforeVerificationStarts, canUseAttestorAuthenticationRequest, claimCreationType)
+      val canAutoSubmit = pigeonVar_list[3] as Boolean
+      val isCloseButtonVisible = pigeonVar_list[4] as Boolean
+      return ReclaimApiVerificationOptions(canDeleteCookiesBeforeVerificationStarts, canUseAttestorAuthenticationRequest, claimCreationType, canAutoSubmit, isCloseButtonVisible)
     }
   }
   fun toList(): List<Any?> {
@@ -497,6 +505,8 @@ data class ReclaimApiVerificationOptions (
       canDeleteCookiesBeforeVerificationStarts,
       canUseAttestorAuthenticationRequest,
       claimCreationType,
+      canAutoSubmit,
+      isCloseButtonVisible,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -654,7 +664,7 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
     }
   }
   fun startVerification(requestArg: ReclaimApiVerificationRequest, callback: (Result<ReclaimApiVerificationResponse>) -> Unit)
-{
+  {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.reclaim_verifier_module.ReclaimModuleApi.startVerification$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
@@ -670,11 +680,11 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
         }
       } else {
         callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
-      } 
+      }
     }
   }
   fun startVerificationFromUrl(urlArg: String, callback: (Result<ReclaimApiVerificationResponse>) -> Unit)
-{
+  {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.reclaim_verifier_module.ReclaimModuleApi.startVerificationFromUrl$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
@@ -690,11 +700,11 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
         }
       } else {
         callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
-      } 
+      }
     }
   }
   fun setOverrides(providerArg: ClientProviderInformationOverride?, featureArg: ClientFeatureOverrides?, logConsumerArg: ClientLogConsumerOverride?, sessionManagementArg: ClientReclaimSessionManagementOverride?, appInfoArg: ClientReclaimAppInfoOverride?, capabilityAccessTokenArg: String?, callback: (Result<Unit>) -> Unit)
-{
+  {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.reclaim_verifier_module.ReclaimModuleApi.setOverrides$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
@@ -707,11 +717,11 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
         }
       } else {
         callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
-      } 
+      }
     }
   }
   fun clearAllOverrides(callback: (Result<Unit>) -> Unit)
-{
+  {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.reclaim_verifier_module.ReclaimModuleApi.clearAllOverrides$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
@@ -724,11 +734,11 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
         }
       } else {
         callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
-      } 
+      }
     }
   }
   fun setVerificationOptions(optionsArg: ReclaimApiVerificationOptions?, callback: (Result<Unit>) -> Unit)
-{
+  {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.reclaim_verifier_module.ReclaimModuleApi.setVerificationOptions$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
@@ -741,11 +751,11 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
         }
       } else {
         callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
-      } 
+      }
     }
   }
   fun ping(callback: (Result<Boolean>) -> Unit)
-{
+  {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.reclaim_verifier_module.ReclaimModuleApi.ping$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
@@ -761,7 +771,7 @@ class ReclaimModuleApi(private val binaryMessenger: BinaryMessenger, private val
         }
       } else {
         callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
-      } 
+      }
     }
   }
 }

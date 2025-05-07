@@ -1,6 +1,8 @@
 VERSION := $(shell cat version)
 ANDROID_DIST_DIR := $(shell pwd)/dist/library/$(VERSION)/repo
 
+.PHONY: build
+
 build:
 	@echo "Building version $(VERSION)"
 	rm -rf $(ANDROID_DIST_DIR)

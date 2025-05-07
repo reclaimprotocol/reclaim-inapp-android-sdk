@@ -40,7 +40,7 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:inapp_sdk:0.4.0"
+implementation "org.reclaimprotocol:inapp_sdk:0.6.0"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
@@ -66,7 +66,7 @@ Add the following permission in your app's AndroidManifest.xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- START optional permissions that can be used by the Reclaim Inapp SDK -->
+    <!-- START **OPTIONAL** permissions that can be used by the Reclaim Inapp SDK -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- Permissions options for the `location` group -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -77,7 +77,7 @@ Add the following permission in your app's AndroidManifest.xml
     <uses-permission android:name="android.permission.CAMERA"/>
     <!-- App can request to ignore battery optimizations -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <!-- END optional permissions -->
+    <!-- END **OPTIONAL** permissions -->
     <!-- Other configurations (Removed for brevity) -->
 </manifest>
 ```
