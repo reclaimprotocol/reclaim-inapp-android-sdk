@@ -88,10 +88,6 @@ public class ReclaimVerification {
          * Key-value pairs for prefilling claim creation variables
          */
         public val parameters: Map<String, String> = emptyMap(),
-        /**
-         * Whether to automatically submit the proof after generation.
-         */
-        public val autoSubmit: Boolean = false,
         public val acceptAiProviders: Boolean = false,
         public val webhookUrl: String? = null
     ) {
@@ -119,7 +115,6 @@ public class ReclaimVerification {
                 session: ReclaimSessionInformation? = null,
                 contextString: String = "",
                 parameters: Map<String, String> = emptyMap(),
-                autoSubmit: Boolean = false,
                 acceptAiProviders: Boolean = false,
                 webhookUrl: String? = null
             ): Request {
@@ -142,7 +137,6 @@ public class ReclaimVerification {
                     session = session,
                     contextString = contextString,
                     parameters = parameters,
-                    autoSubmit = autoSubmit,
                     acceptAiProviders = acceptAiProviders,
                     webhookUrl = webhookUrl
                 )
@@ -176,6 +170,14 @@ public class ReclaimVerification {
         public val canDeleteCookiesBeforeVerificationStarts: Boolean = true,
         public val attestorAuthRequestProvider: AttestorAuthRequestProvider? = null,
         public val claimCreationType: ClaimCreationType = ClaimCreationType.STANDALONE,
+        /**
+         * Whether to automatically submit the proof after generation.
+         */
+        public val canAutoSubmit: Boolean = true,
+        /**
+         * Whether the close button is visible
+         */
+        public val isCloseButtonVisible: Boolean = true
     ) {
         public interface AttestorAuthRequestProvider {
             public fun fetchAttestorAuthenticationRequest(
@@ -186,12 +188,12 @@ public class ReclaimVerification {
 
         public enum class ClaimCreationType() {
             STANDALONE,
-            ON_ME_CHAIN;
+            ME_CHAIN;
 
             internal fun toApi(): ClaimCreationTypeApi {
                 return when(this) {
                     STANDALONE -> ClaimCreationTypeApi.STANDALONE
-                    ON_ME_CHAIN -> ClaimCreationTypeApi.ON_ME_CHAIN
+                    ME_CHAIN -> ClaimCreationTypeApi.ME_CHAIN
                 }
             }
         }
@@ -316,7 +318,6 @@ public class ReclaimVerification {
                     context = request.contextString,
                     sessionId = request.session?.sessionId ?: "",
                     parameters = request.parameters,
-                    autoSubmit = request.autoSubmit,
                     acceptAiProviders = request.acceptAiProviders,
                     webhookUrl = request.webhookUrl
                 )
@@ -462,6 +463,8 @@ public class ReclaimVerification {
                     canDeleteCookiesBeforeVerificationStarts = options.canDeleteCookiesBeforeVerificationStarts,
                     canUseAttestorAuthenticationRequest = provider != null,
                     claimCreationType = options.claimCreationType.toApi(),
+                    canAutoSubmit = options.canAutoSubmit,
+                    isCloseButtonVisible = options.isCloseButtonVisible,
                 )) { result ->
                     callback(result)
                 }
