@@ -11,8 +11,8 @@ if (localPropertiesFile.exists()) {
         localProperties.load(reader)
     }
 }
-def reclaimSdkAppId = localProperties.getProperty('reclaimSdk.appId')
-def reclaimSdkAppSecret = localProperties.getProperty('reclaimSdk.appSecret')
+def reclaimSdkAppId = System.env.RECLAIM_SDK_APP_ID ?: localProperties.getProperty('reclaimSdk.appId')
+def reclaimSdkAppSecret = System.env.RECLAIM_SDK_APP_SECRET ?: localProperties.getProperty('reclaimSdk.appSecret')
 
 android {
     namespace 'org.reclaimprotocol.inapp_sdk_example'
@@ -33,14 +33,22 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            resValue "string", "RECLAIM_SDK_APP_ID", System.env.RECLAIM_SDK_APP_ID ?: reclaimSdkAppId
-            resValue "string", "RECLAIM_SDK_APP_SECRET", System.env.RECLAIM_SDK_APP_SECRET ?: reclaimSdkAppSecret
+            if (reclaimSdkAppId != null) {
+                resValue "string", "RECLAIM_SDK_APP_ID", reclaimSdkAppId
+            }
+            if (reclaimSdkAppSecret != null) {
+                resValue "string", "RECLAIM_SDK_APP_SECRET", reclaimSdkAppSecret
+            }
 
             signingConfig = signingConfigs.debug
         }
         debug {
-            resValue "string", "RECLAIM_SDK_APP_ID", System.env.RECLAIM_SDK_APP_ID ?: reclaimSdkAppId
-            resValue "string", "RECLAIM_SDK_APP_SECRET", System.env.RECLAIM_SDK_APP_SECRET ?: reclaimSdkAppSecret
+            if (reclaimSdkAppId != null) {
+                resValue "string", "RECLAIM_SDK_APP_ID", reclaimSdkAppId
+            }
+            if (reclaimSdkAppSecret != null) {
+                resValue "string", "RECLAIM_SDK_APP_SECRET", reclaimSdkAppSecret
+            }
         }
     }
     compileOptions {
@@ -79,5 +87,5 @@ dependencies {
     debugImplementation libs.androidx.ui.test.manifest
 
     //noinspection UseTomlInstead
-    implementation "org.reclaimprotocol:inapp_sdk:0.6.0"
+    implementation "org.reclaimprotocol:inapp_sdk:0.7.0"
 }
