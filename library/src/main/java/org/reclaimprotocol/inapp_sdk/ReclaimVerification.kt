@@ -3,6 +3,7 @@ package org.reclaimprotocol.inapp_sdk
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import org.reclaimprotocol.inapp_sdk.ReclaimVerification.ReclaimSessionIdentity
 
@@ -506,7 +507,7 @@ public class ReclaimVerification {
                         ReclaimApiVerificationExceptionType.VERIFICATION_FAILED, ReclaimApiVerificationExceptionType.UNKNOWN -> ReclaimVerificationException.Failed(
                             sessionId = response.sessionId,
                             didSubmitManualVerification = response.didSubmitManualVerification,
-                            reason = response.exception.message
+                            reason = "${response.exception.message}${if (response.exception.stackTraceAsString.isNotBlank()) "\n*********\nstacktrace: ${response.exception.stackTraceAsString}" else ""}"
                         )
                     }
                     handler.onException(returnedException)
