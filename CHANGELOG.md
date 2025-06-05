@@ -1,3 +1,7 @@
+## 0.7.3
+
+* Update inapp android module dependency to 0.7.3
+
 ## 0.7.0
 
 * Updates inapp module dependency to 0.7.0
