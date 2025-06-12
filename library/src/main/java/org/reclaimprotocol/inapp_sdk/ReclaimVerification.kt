@@ -3,7 +3,6 @@ package org.reclaimprotocol.inapp_sdk
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import org.reclaimprotocol.inapp_sdk.ReclaimVerification.ReclaimSessionIdentity
 
@@ -89,8 +88,10 @@ public class ReclaimVerification {
          * Key-value pairs for prefilling claim creation variables
          */
         public val parameters: Map<String, String> = emptyMap(),
-        public val acceptAiProviders: Boolean = false,
-        public val webhookUrl: String? = null
+        /** A `ProviderVersion` for resolving the version of provider that must be used in the verification flow.
+         *  Defaults to a versionExpression with empty string that represents latest version.
+         */
+        public val providerVersion: ProviderVersion = ProviderVersion(),
     ) {
         companion object {
             private const val META_APP_ID = "org.reclaimprotocol.inapp_sdk.APP_ID"
@@ -116,8 +117,7 @@ public class ReclaimVerification {
                 session: ReclaimSessionInformation? = null,
                 contextString: String = "",
                 parameters: Map<String, String> = emptyMap(),
-                acceptAiProviders: Boolean = false,
-                webhookUrl: String? = null
+                providerVersion: ProviderVersion = ProviderVersion()
             ): Request {
                 val ai: ApplicationInfo = context.packageManager.getApplicationInfo(
                     context.packageName, PackageManager.GET_META_DATA
@@ -138,10 +138,28 @@ public class ReclaimVerification {
                     session = session,
                     contextString = contextString,
                     parameters = parameters,
-                    acceptAiProviders = acceptAiProviders,
-                    webhookUrl = webhookUrl
+                    providerVersion = providerVersion
                 )
             }
+        }
+
+        public data class ProviderVersion (
+            public val resolvedVersion: String,
+            public val versionExpression: String
+        ) {
+            companion object {
+                public fun resolved(exactVersion: String, versionExpression: String? = null): ProviderVersion {
+                    return ProviderVersion(
+                        resolvedVersion = exactVersion,
+                        versionExpression = versionExpression ?: exactVersion
+                    )
+                }
+            }
+
+            public constructor(versionExpression: String = "") : this(
+                resolvedVersion = versionExpression,
+                versionExpression = versionExpression
+            )
         }
     }
 
@@ -319,13 +337,43 @@ public class ReclaimVerification {
                     context = request.contextString,
                     sessionId = request.session?.sessionId ?: "",
                     parameters = request.parameters,
-                    acceptAiProviders = request.acceptAiProviders,
-                    webhookUrl = request.webhookUrl
+                    providerVersion = ProviderVersionApi(
+                        versionExpression = request.providerVersion.versionExpression,
+                        resolvedVersion = request.providerVersion.resolvedVersion
+                    )
                 )
             ) { result ->
                 ReclaimActivity.closeAll()
                 onApiResult(ReclaimSessionIdentity.sessionId.ifBlank {
                     request.session?.sessionId ?: ""
+                }, result, handler)
+            }
+        }
+
+        /**
+         * Starts the verification process from a URL.
+         * Initiates the verification process by presenting a full-screen interface.
+         * This method handles the entire verification flow, including:
+         * - Presenting the user interface for verification
+         * - Managing the verification session
+         * - Processing the verification result
+         * - Returning the proof upon successful completion
+         *
+         * See also [ReclaimVerification.startVerification] which starts the verification process from a Request object.
+         */
+        public fun startVerificationFromJson(
+            context: Context, template: Map<Any?, Any?>, handler: ResultHandler
+        ) {
+            preWarm(context)
+            ReclaimActivity.start(context)
+            val moduleApi = getModuleApi(context)
+            val maybeSessionId = template["sessionId"]
+            moduleApi.startVerificationFromJson(
+                template
+            ) { result ->
+                ReclaimActivity.closeAll()
+                onApiResult(ReclaimSessionIdentity.sessionId.ifBlank {
+                    maybeSessionId as? String ?: ""
                 }, result, handler)
             }
         }
@@ -401,7 +449,9 @@ public class ReclaimVerification {
                     idleTimeThresholdForManualVerificationTrigger = featureOptions.idleTimeThresholdForManualVerificationTrigger,
                     sessionTimeoutForManualVerificationTrigger = featureOptions.sessionTimeoutForManualVerificationTrigger,
                     attestorBrowserRpcUrl = featureOptions.attestorBrowserRpcUrl,
-                    isAIFlowEnabled = featureOptions.isAIFlowEnabled
+                    isAIFlowEnabled = featureOptions.isAIFlowEnabled,
+                    manualReviewMessage = featureOptions.manualReviewMessage,
+                    loginPromptMessage = featureOptions.loginPromptMessage
                 ),
                 logConsumerArg = if (logConsumer == null) null else ClientLogConsumerOverride(
                     enableLogHandler = logConsumer.logHandler != null,
@@ -573,14 +623,28 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
         providerId: String,
         timestamp: String,
         signature: String,
-        callback: (Result<String>) -> Unit
+        providerVersion: String,
+        callback: (Result<SessionInitResponseApi>) -> Unit
     ) {
         sessionHandler?.createSession(
             appId = appId,
             providerId = providerId,
             timestamp = timestamp,
             signature = signature,
-            callback = callback
+            providerVersion = providerVersion,
+            callback = { e ->
+                callback(e.fold(
+                    onSuccess = {
+                        Result.success(SessionInitResponseApi(
+                            sessionId = it.sessionId,
+                            resolvedProviderVersion = it.resolvedProviderVersion
+                        ))
+                    },
+                    onFailure = { e ->
+                        Result.failure(e)
+                    }
+                ))
+            }
         )
     }
 
