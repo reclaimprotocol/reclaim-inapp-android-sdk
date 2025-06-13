@@ -52,7 +52,9 @@ public class ReclaimOverrides {
         public val idleTimeThresholdForManualVerificationTrigger: Long? = null,
         public val sessionTimeoutForManualVerificationTrigger: Long? = null,
         public val attestorBrowserRpcUrl: String? = null,
-        public val isAIFlowEnabled: Boolean? = null
+        public val isAIFlowEnabled: Boolean? = null,
+        public val manualReviewMessage: String? = null,
+        public val loginPromptMessage: String? = null
     )
 
     public data class LogConsumer(
@@ -84,7 +86,8 @@ public class ReclaimOverrides {
                 providerId: String,
                 timestamp: String,
                 signature: String,
-                callback: (Result<String>) -> Unit
+                providerVersion: String,
+                callback: (Result<InitResponse>) -> Unit
             )
 
             public fun updateSession(
@@ -95,6 +98,11 @@ public class ReclaimOverrides {
                 appId: String, providerId: String, sessionId: String, logType: String, metadata: Map<String, Any?>?
             )
         }
+
+        public data class InitResponse(
+            public val sessionId: String,
+            public val resolvedProviderVersion: String
+        )
     }
 
     public data class ReclaimAppInfo(

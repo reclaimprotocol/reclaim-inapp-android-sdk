@@ -130,7 +130,7 @@ fun ExamplePage(
                         ),
                         handler = object : ReclaimVerification.ResultHandler {
                             override fun onException(exception: ReclaimVerification.ReclaimVerificationException) {
-                                Log.e("MainActivity", "Something went wrong", exception)
+                                Log.e("MainActivity", "Something went wrong.\nreason: ${exception.reason}\ncause: ${exception.cause}", exception)
                                 val reason = when (exception) {
                                     is ReclaimVerification.ReclaimVerificationException.Failed -> "Failed because: ${exception.reason}"
                                     is ReclaimVerification.ReclaimVerificationException.Cancelled -> "Verification cancelled"
