@@ -693,6 +693,7 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
         sessionId: String,
         signature: String,
         timestamp: String,
+        resolvedVersion: String,
         callback: (Result<String>) -> Unit
     ) {
         if (providerCallback == null) {
@@ -705,6 +706,7 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
             sessionId = sessionId,
             signature = signature,
             timestamp = timestamp,
+            resolvedVersion = resolvedVersion,
             callback = callback
         )
     }
