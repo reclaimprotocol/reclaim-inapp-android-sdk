@@ -40,7 +40,7 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:inapp_sdk:0.10.7"
+implementation "org.reclaimprotocol:inapp_sdk:0.10.8"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
@@ -143,3 +143,15 @@ If the verification is cancelled or failed, the handler's `ReclaimVerification.R
 
 For a complete example, see the [Reclaim Compose Example - Android](example/README.md).
 
+## Troubleshooting
+
+### Cronet errors on android without play services
+On android devices which don't have play services, you may get following errors in Android logs: `java.lang.RuntimeException: All available Cronet providers are disabled. A provider should be enabled before it can be used.`, `Google-Play-Services-Cronet-Provider is unavailable.`. This is because the Reclaim InApp SDK depends on cronet for making http requests.
+To fix this, you need to use embedded cronet in your android app by adding the following dependency in your build.gradle dependencies block: 
+```gradle
+dependencies {
+    // ... other dependencies (not shown for brevity)
+    // Use embedded cronet
+    implementation("org.chromium.net:cronet-embedded:113.5672.61")
+}
+```
