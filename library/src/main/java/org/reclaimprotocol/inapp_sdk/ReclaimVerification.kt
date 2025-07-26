@@ -3,6 +3,7 @@ package org.reclaimprotocol.inapp_sdk
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import org.reclaimprotocol.inapp_sdk.ReclaimVerification.ReclaimSessionIdentity
 
@@ -222,20 +223,20 @@ public class ReclaimVerification {
      * Represents exceptions that can occur during the verification process.
      */
     public sealed class ReclaimVerificationException(
-        public val sessionId: String, public val didSubmitManualVerification: Boolean, public open val reason: String? = null
+        public val sessionId: String, public val reason: String, public val didSubmitManualVerification: Boolean
     ) : Exception() {
-        public class Cancelled(sessionId: String, didSubmitManualVerification: Boolean) :
-            ReclaimVerificationException(sessionId, didSubmitManualVerification)
+        public class Cancelled(sessionId: String, reason: String, didSubmitManualVerification: Boolean) :
+            ReclaimVerificationException(sessionId, reason, didSubmitManualVerification)
 
-        public class Dismissed(sessionId: String, didSubmitManualVerification: Boolean) :
-            ReclaimVerificationException(sessionId, didSubmitManualVerification)
+        public class Dismissed(sessionId: String, didSubmitManualVerification: Boolean, reason: String) :
+            ReclaimVerificationException(sessionId, reason, didSubmitManualVerification)
 
-        public class SessionExpired(sessionId: String, didSubmitManualVerification: Boolean) :
-            ReclaimVerificationException(sessionId, didSubmitManualVerification)
+        public class SessionExpired(sessionId: String, didSubmitManualVerification: Boolean, reason: String) :
+            ReclaimVerificationException(sessionId, reason, didSubmitManualVerification)
 
         public class Failed(
-            sessionId: String, didSubmitManualVerification: Boolean, public override val reason: String
-        ) : ReclaimVerificationException(sessionId, didSubmitManualVerification)
+            sessionId: String, didSubmitManualVerification: Boolean, reason: String
+        ) : ReclaimVerificationException(sessionId, reason, didSubmitManualVerification)
     }
 
     public final class ReclaimPlatformException internal constructor(
@@ -538,26 +539,31 @@ public class ReclaimVerification {
                         )
                     )
                 } else {
+                    val reason = "${response.exception.message}${if (response.exception.stackTraceAsString.isNotBlank()) "\n*********\nstacktrace: ${response.exception.stackTraceAsString}" else ""}"
+
                     val returnedException: ReclaimVerificationException = when (exception.type) {
                         ReclaimApiVerificationExceptionType.SESSION_EXPIRED -> ReclaimVerificationException.SessionExpired(
                             sessionId = response.sessionId,
+                            reason = reason,
                             didSubmitManualVerification = response.didSubmitManualVerification
                         )
 
                         ReclaimApiVerificationExceptionType.VERIFICATION_DISMISSED -> ReclaimVerificationException.Dismissed(
                             sessionId = response.sessionId,
+                            reason = reason,
                             didSubmitManualVerification = response.didSubmitManualVerification
                         )
 
                         ReclaimApiVerificationExceptionType.VERIFICATION_CANCELLED -> ReclaimVerificationException.Cancelled(
                             sessionId = response.sessionId,
+                            reason = reason,
                             didSubmitManualVerification = response.didSubmitManualVerification
                         )
 
                         ReclaimApiVerificationExceptionType.VERIFICATION_FAILED, ReclaimApiVerificationExceptionType.UNKNOWN -> ReclaimVerificationException.Failed(
                             sessionId = response.sessionId,
+                            reason = reason,
                             didSubmitManualVerification = response.didSubmitManualVerification,
-                            reason = "${response.exception.message}${if (response.exception.stackTraceAsString.isNotBlank()) "\n*********\nstacktrace: ${response.exception.stackTraceAsString}" else ""}"
                         )
                     }
                     handler.onException(returnedException)
