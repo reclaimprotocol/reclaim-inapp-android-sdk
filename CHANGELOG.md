@@ -1,5 +1,7 @@
 ## 0.10.13
 
+* Add reasons on all android exception cases from verification error responses
+* Fix a case for android inapp sdk where the verification screen wouldn't close automatically on immediate verification error responses
 * Fix webview re-initialization when initial attempt fails
 * Update verification review screen UI
 * Add handling of local client errors on attestor browser rpc message
