@@ -40,7 +40,7 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:inapp_sdk:0.10.13"
+implementation "org.reclaimprotocol:inapp_sdk:0.12.0"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
@@ -152,6 +152,6 @@ To fix this, you need to use embedded cronet in your android app by adding the f
 dependencies {
     // ... other dependencies (not shown for brevity)
     // Use embedded cronet
-    implementation("org.chromium.net:cronet-embedded:113.5672.61")
+    implementation("org.chromium.net:cronet-embedded:119.6045.31")
 }
 ```
