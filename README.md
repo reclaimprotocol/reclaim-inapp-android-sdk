@@ -1,6 +1,6 @@
 # Reclaim InApp SDK
 
-[![SDK Version](https://img.shields.io/badge/version-0.17.1-brightgreen)](https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/repo)
+[![SDK Version](https://img.shields.io/github/v/tag/reclaimprotocol/reclaim-inapp-android-sdk?label=version&color=brightgreen)](https://reclaim-inapp-sdk.s3.ap-south-1.amazonaws.com/android/repo)
 
 This SDK allows you to integrate Reclaim's in-app verification process into your Android application.
 
