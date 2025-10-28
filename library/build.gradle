@@ -49,6 +49,13 @@ android {
             url "$flutterStorageUrl/download.flutter.io"
         }
     }
+    publishing {
+        singleVariant("release") {}
+        // multipleVariants {
+        //     allVariants()
+        //     withJavadocJar()
+        // }
+    }
 }
 
 dependencies {
@@ -63,15 +70,15 @@ dependencies {
     profileImplementation libs.reclaim.profile
     releaseImplementation libs.reclaim.release
 }
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'org.reclaimprotocol'
+            version = "$System.env.INAPP_SDK_VERSION"
+            artifactId = 'inapp_sdk'
 
-afterEvaluate {
-    publishing {
-        publications {
-            // Creates a Maven publication called "release".
-            release(MavenPublication) {
+            afterEvaluate {
                 from components.release
-
-                artifactId = 'inapp_sdk'
             }
         }
     }
