@@ -48,17 +48,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         ReclaimVerification.preWarm(context)
 
-        ReclaimVerification.setConsoleLogging(context = context, enable = true) { result ->
-            result
-                .onSuccess {
-                    Log.d("MainActivity", "Reclaim setConsoleLogging set")
-                }
-                .onFailure { throwable ->
-                    Log.e("MainActivity", "Could not set setConsoleLogging", throwable)
-                    Toast.makeText(context, "Could not set setConsoleLogging", Toast.LENGTH_LONG).show()
-                }
-        }
-
         // Advanced Usage: Use ReclaimVerification.setOverrides for overriding sdk
         ReclaimVerification.setOverrides(
             context = context,

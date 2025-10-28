@@ -580,12 +580,12 @@ public class ReclaimVerification {
 
         public fun setConsoleLogging(
             context: Context,
-            enable: Boolean,
+            enabled: Boolean,
             callback: (Result<Unit>) -> Unit
         ) {
             preWarm(context)
             val moduleApi = getModuleApi(context)
-            moduleApi.setConsoleLogging(enable) { result ->
+            moduleApi.setConsoleLogging(enabled) { result ->
                 callback(result)
             }
         }
