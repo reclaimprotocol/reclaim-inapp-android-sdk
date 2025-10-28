@@ -3,7 +3,6 @@ package org.reclaimprotocol.inapp_sdk
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import org.reclaimprotocol.inapp_sdk.ReclaimVerification.ReclaimSessionIdentity
 
@@ -578,6 +577,18 @@ public class ReclaimVerification {
                 )
             })
         }
+
+        public fun setConsoleLogging(
+            context: Context,
+            enabled: Boolean,
+            callback: (Result<Unit>) -> Unit
+        ) {
+            preWarm(context)
+            val moduleApi = getModuleApi(context)
+            moduleApi.setConsoleLogging(enabled) { result ->
+                callback(result)
+            }
+        }
     }
 }
 
@@ -657,6 +668,7 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
     override fun updateSession(
         sessionId: String,
         status: ReclaimSessionStatus,
+        metadata: Map<String, Any?>?,
         callback: (Result<Boolean>) -> Unit
     ) {
         sessionHandler?.updateSession(
