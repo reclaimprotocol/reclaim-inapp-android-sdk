@@ -42,7 +42,7 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:inapp_sdk:0.21.0"
+implementation "org.reclaimprotocol:inapp_sdk:0.24.0"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
