@@ -187,16 +187,38 @@ public class ReclaimVerification {
          * Defaults to true.
          */
         public val canDeleteCookiesBeforeVerificationStarts: Boolean = true,
+        /**
+         * Use a callback to host that returns an authentication request when a Reclaim HTTP provider is provided.
+         */
         public val attestorAuthRequestProvider: AttestorAuthRequestProvider? = null,
         public val claimCreationType: ClaimCreationType = ClaimCreationType.STANDALONE,
         /**
          * Whether to automatically submit the proof after generation.
+         * Defaults to true.
          */
         public val canAutoSubmit: Boolean = true,
         /**
-         * Whether the close button is visible
+         * Whether the close button is visible.
+         * Defaults to true.
          */
-        public val isCloseButtonVisible: Boolean = true
+        public val isCloseButtonVisible: Boolean = true,
+        /**
+         * A language code & Country code for localization that should be enforced in the verification flow.
+         */
+        public val locale: String? = null,
+        /**
+         * Enables use of Reclaim's TEE+MPC protocol for HTTP Request claim verification and
+         * attestation.
+         *
+         * When set to `true`, the verification will use Trusted Execution Environment
+         * (TEE) with Multi-Party Computation (MPC) for enhanced security.
+         *
+         * When set to `false`, the standard Reclaim's proxy attestor verification flow is used.
+         *
+         * When `null` (default), the backend decides whether to use TEE based on
+         * a feature flag (currently in staged rollout).
+         */
+        public val useTeeOperator: Boolean? = null
     ) {
         public interface AttestorAuthRequestProvider {
             public fun fetchAttestorAuthenticationRequest(
@@ -451,7 +473,16 @@ public class ReclaimVerification {
                     attestorBrowserRpcUrl = featureOptions.attestorBrowserRpcUrl,
                     isAIFlowEnabled = featureOptions.isAIFlowEnabled,
                     manualReviewMessage = featureOptions.manualReviewMessage,
-                    loginPromptMessage = featureOptions.loginPromptMessage
+                    loginPromptMessage = featureOptions.loginPromptMessage,
+                    useTEE = featureOptions.useTEE,
+                    interceptorOptions = featureOptions.interceptorOptions,
+                    claimCreationTimeoutDurationInMins = featureOptions.claimCreationTimeoutDurationInMins,
+                    sessionNoActivityTimeoutDurationInMins = featureOptions.sessionNoActivityTimeoutDurationInMins,
+                    aiProviderNoActivityTimeoutDurationInSecs = featureOptions.aiProviderNoActivityTimeoutDurationInSecs,
+                    pageLoadedCompletedDebounceTimeoutMs = featureOptions.pageLoadedCompletedDebounceTimeoutMs,
+                    potentialLoginTimeoutS = featureOptions.potentialLoginTimeoutS,
+                    screenshotCaptureIntervalSeconds = featureOptions.screenshotCaptureIntervalSeconds,
+                    teeUrls = featureOptions.teeUrls
                 ),
                 logConsumerArg = if (logConsumer == null) null else ClientLogConsumerOverride(
                     enableLogHandler = logConsumer.logHandler != null,
@@ -516,6 +547,8 @@ public class ReclaimVerification {
                     claimCreationType = options.claimCreationType.toApi(),
                     canAutoSubmit = options.canAutoSubmit,
                     isCloseButtonVisible = options.isCloseButtonVisible,
+                    locale = options.locale,
+                    useTeeOperator = options.useTeeOperator
                 )) { result ->
                     callback(result)
                 }
