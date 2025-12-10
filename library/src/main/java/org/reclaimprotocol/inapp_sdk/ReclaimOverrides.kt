@@ -55,7 +55,16 @@ public class ReclaimOverrides {
         public val attestorBrowserRpcUrl: String? = null,
         public val isAIFlowEnabled: Boolean? = null,
         public val manualReviewMessage: String? = null,
-        public val loginPromptMessage: String? = null
+        public val loginPromptMessage: String? = null,
+        public val useTEE: Boolean? = null,
+        public val interceptorOptions: String? = null,
+        public val claimCreationTimeoutDurationInMins: Long? = null,
+        public val sessionNoActivityTimeoutDurationInMins: Long? = null,
+        public val aiProviderNoActivityTimeoutDurationInSecs: Long? = null,
+        public val pageLoadedCompletedDebounceTimeoutMs: Long? = null,
+        public val potentialLoginTimeoutS: Long? = null,
+        public val screenshotCaptureIntervalSeconds: Long? = null,
+        public val teeUrls: String? = null
     )
 
     public data class LogConsumer(
