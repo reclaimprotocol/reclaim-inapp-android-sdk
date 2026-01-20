@@ -1,5 +1,6 @@
 ## 0.29.0
 
+* Compile library and verifier module with kotlin version 2.0.21
 * Add proof submission events
 * Update default TEEK & TEET URLs
 * Add IS_RECLAIM_INAPPSDK in log events
