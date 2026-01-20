@@ -68,8 +68,16 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-dependencies {
+// You may need this if you're using kotlin versions older than 2.2.21
+ configurations.all {
+     resolutionStrategy {
+         force libs.jetbrains.kotlin.stdlib
+         force libs.jetbrains.kotlin.stdlib.jdk7
+         force libs.jetbrains.kotlin.stdlib.jdk8
+     }
+ }
 
+dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.activity.compose
