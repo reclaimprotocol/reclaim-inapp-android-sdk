@@ -56,6 +56,14 @@ android {
         //     withJavadocJar()
         // }
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force libs.jetbrains.kotlin.stdlib
+            force libs.jetbrains.kotlin.stdlib.jdk7
+            force libs.jetbrains.kotlin.stdlib.jdk8
+        }
+    }
 }
 
 dependencies {

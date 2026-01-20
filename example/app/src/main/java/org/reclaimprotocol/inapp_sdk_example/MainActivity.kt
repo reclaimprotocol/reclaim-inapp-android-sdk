@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +23,7 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -91,6 +93,9 @@ fun ExamplePage(
     var expanded by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("example") }
     var resultText by remember { mutableStateOf("") }
+    var teeModeExpanded by remember { mutableStateOf(false) }
+    val defaultTeeMode: Boolean? = null
+    var selectedTeeMode by remember { mutableStateOf(defaultTeeMode) }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -144,7 +149,7 @@ fun ExamplePage(
                     readOnly = true,
                     label = { Text("Verification Mode") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable, true)
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true)
                 )
                 DropdownMenu(
                     expanded = expanded,
@@ -191,9 +196,68 @@ fun ExamplePage(
                 modifier = Modifier.padding(16.dp)
             )
 
+            // Mode Selection Dropdown
+            ExposedDropdownMenuBox(
+                expanded = teeModeExpanded,
+                onExpandedChange = { teeModeExpanded = it },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                TextField(
+                    value = when (selectedTeeMode) {
+                        null -> "Auto"
+                        true -> "Enabled"
+                        false -> "Disabled"
+                    },
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("TEE Mode") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = teeModeExpanded) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true)
+                )
+                DropdownMenu(
+                    expanded = teeModeExpanded,
+                    onDismissRequest = { teeModeExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Auto") },
+                        onClick = {
+                            selectedTeeMode = null
+                            teeModeExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Enabled") },
+                        onClick = {
+                            selectedTeeMode = true
+                            teeModeExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Disabled") },
+                        onClick = {
+                            selectedTeeMode = false
+                            teeModeExpanded = false
+                        }
+                    )
+                }
+            }
+
             // Button
             Button(
                 onClick = {
+                    Log.d("MainActivity", "Using TEE Mode: $selectedTeeMode")
+
+                    ReclaimVerification.setVerificationOptions(
+                        context = context,
+                        options = ReclaimVerification.VerificationOptions(
+                            useTeeOperator = selectedTeeMode
+                        )
+                    ) { result ->
+                        if (result.isFailure) {
+                            Log.e("MainActivity", "Failed to set options: ")
+                        }
+                    }
+
                     val handler = object : ReclaimVerification.ResultHandler {
                         override fun onException(exception: ReclaimVerification.ReclaimVerificationException) {
                             Log.e("MainActivity", "Something went wrong.\nreason: ${exception.reason}\ncause: ${exception.cause}", exception)
