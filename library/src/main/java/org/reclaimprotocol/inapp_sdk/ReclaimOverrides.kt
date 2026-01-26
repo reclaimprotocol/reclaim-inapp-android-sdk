@@ -118,7 +118,8 @@ public class ReclaimOverrides {
     public data class ReclaimAppInfo(
         public val appName: String,
         public val appImageUrl: String,
-        public val isRecurring: Boolean = false
+        public val isRecurring: Boolean = false,
+        public val theme: String? = null
     )
 
     public interface SessionIdentityUpdateHandler {

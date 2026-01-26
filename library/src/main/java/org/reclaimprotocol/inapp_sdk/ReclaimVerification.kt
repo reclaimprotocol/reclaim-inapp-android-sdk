@@ -497,7 +497,8 @@ public class ReclaimVerification {
                 appInfoArg = if (appInfo == null) null else ClientReclaimAppInfoOverride(
                     appName = appInfo.appName,
                     appImageUrl = appInfo.appImageUrl,
-                    isRecurring = appInfo.isRecurring
+                    isRecurring = appInfo.isRecurring,
+                    theme = appInfo.theme
                 ),
                 capabilityAccessTokenArg = capabilityAccessToken,
                 callback = { result ->

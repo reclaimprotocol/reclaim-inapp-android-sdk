@@ -50,11 +50,22 @@ android {
         }
     }
     publishing {
-        singleVariant("release") {}
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
         // multipleVariants {
         //     allVariants()
         //     withJavadocJar()
         // }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            force libs.jetbrains.kotlin.stdlib
+            force libs.jetbrains.kotlin.stdlib.jdk7
+            force libs.jetbrains.kotlin.stdlib.jdk8
+        }
     }
 }
 
