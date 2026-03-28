@@ -482,7 +482,10 @@ public class ReclaimVerification {
                     pageLoadedCompletedDebounceTimeoutMs = featureOptions.pageLoadedCompletedDebounceTimeoutMs,
                     potentialLoginTimeoutS = featureOptions.potentialLoginTimeoutS,
                     screenshotCaptureIntervalSeconds = featureOptions.screenshotCaptureIntervalSeconds,
-                    teeUrls = featureOptions.teeUrls
+                    teeUrls = featureOptions.teeUrls,
+                    privacyPolicyUrl = featureOptions.privacyPolicyUrl,
+                    termsOfServiceUrl = featureOptions.termsOfServiceUrl,
+                    potentialFailureReasonsUrl = featureOptions.potentialFailureReasonsUrl
                 ),
                 logConsumerArg = if (logConsumer == null) null else ClientLogConsumerOverride(
                     enableLogHandler = logConsumer.logHandler != null,

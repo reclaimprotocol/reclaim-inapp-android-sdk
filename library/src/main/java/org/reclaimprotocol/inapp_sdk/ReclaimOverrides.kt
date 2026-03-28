@@ -64,7 +64,10 @@ public class ReclaimOverrides {
         public val pageLoadedCompletedDebounceTimeoutMs: Long? = null,
         public val potentialLoginTimeoutS: Long? = null,
         public val screenshotCaptureIntervalSeconds: Long? = null,
-        public val teeUrls: String? = null
+        public val teeUrls: String? = null,
+        public val privacyPolicyUrl: String? = null,
+        public val termsOfServiceUrl: String? = null,
+        public val potentialFailureReasonsUrl: String? = null
     )
 
     public data class LogConsumer(

@@ -11,6 +11,9 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.10.0'
+}
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
@@ -28,7 +31,7 @@ dependencyResolutionManagement {
         // SDK users don't have to do this.
         // Only for local sdk development.
         // maven {
-        //     url "../dist/library/0.29.0/repo"
+        //     url "../dist/library/0.33.0/repo"
         // }
     }
 }
