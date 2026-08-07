@@ -95,5 +95,5 @@ dependencies {
     debugImplementation libs.androidx.ui.test.manifest
 
     //noinspection UseTomlInstead
-    implementation "org.reclaimprotocol:inapp_sdk:0.36.0"
+    implementation "org.reclaimprotocol:inapp_sdk:0.39.0"
 }
