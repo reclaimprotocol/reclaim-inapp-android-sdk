@@ -490,7 +490,9 @@ public class ReclaimVerification {
                 logConsumerArg = if (logConsumer == null) null else ClientLogConsumerOverride(
                     enableLogHandler = logConsumer.logHandler != null,
                     canSdkCollectTelemetry = logConsumer.canSdkCollectTelemetry,
-                    canSdkPrintLogs = logConsumer.canSdkPrintLogs
+                    canSdkPrintLogs = logConsumer.canSdkPrintLogs,
+                    logLevel = logConsumer.logLevel,
+                    canLogMetadata = logConsumer.canLogMetadata
                 ),
                 sessionManagementArg = if (sessionManagement == null) null else ClientReclaimSessionManagementOverride(
                     // A handler has been provided. We'll not let SDK manage sessions in this case.

@@ -83,7 +83,17 @@ public class ReclaimOverrides {
         /**
          * Defaults to enabled when not in release mode.
          */
-        public val canSdkPrintLogs: Boolean? = null
+        public val canSdkPrintLogs: Boolean? = null,
+        /**
+         * When provided, can be used to change logLevel.
+         * Available levels are: ALL, FINEST, FINER, FINE,
+         * CONFIG, INFO, WARNING, SEVERE, SHOUT, OFF
+         */
+        public val logLevel: String? = null,
+        /**
+         * Whether metadata should also be logged along with logs
+         */
+        public val canLogMetadata: Boolean? = null
     ) {
         public interface LogHandler {
             public fun onLogs(logJsonString: String)
