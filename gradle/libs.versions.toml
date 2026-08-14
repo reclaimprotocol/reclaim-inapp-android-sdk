@@ -1,6 +1,6 @@
 [versions]
-agp = "8.12.3"
-reclaimVerifierModule = "0.40.0"
+agp = "9.1.0"
+reclaimVerifierModule = "0.42.1"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
