@@ -1,5 +1,13 @@
 ## 0.43.0
 
+* Build the library against compileSdk 36 instead of 37. The published 0.43.0 AAR declared
+  `minCompileSdk=37`, so consumers failed `:app:checkDebugAarMetadata` unless they compiled
+  against API 37 - which needs AGP 9.1.1+ and is unavailable to stable React Native releases.
+  The underlying Flutter module was already at 36; only this wrapper was still at 37.
+* Fail `make build` if any published AAR declares a `minCompileSdk` above 36.
+
+## 0.43.0
+
 * Downgrade secure storage and permission handler to support older versions of android compile sdk requirement
 * Build Android AARs against compileSdk 36 instead of 37, so published artifacts declare
   `minCompileSdk=36`. Compiling against API 37 requires AGP 9.1.1+, which no stable React
