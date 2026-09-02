@@ -119,6 +119,12 @@ public class ReclaimActivity : FlutterActivity() {
     var attemptId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Must run before super.onCreate: FlutterActivity resolves the cached engine there.
+        // After process death Android can restore this activity with its original
+        // cached-engine intent while the process-local FlutterEngineCache is empty,
+        // which makes Flutter throw before any Reclaim code runs. Re-warming here keeps
+        // the cached engine id resolvable; the stale attempt is then finished below.
+        preWarm(applicationContext)
         super.onCreate(savedInstanceState)
         Log.i("ReclaimActivity", "ReclaimActivity onCreate")
         instances.add(this)
