@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -16,12 +15,12 @@ def reclaimSdkAppSecret = System.env.RECLAIM_SDK_APP_SECRET ?: localProperties.g
 
 android {
     namespace 'org.reclaimprotocol.inapp_sdk_example'
-    compileSdk 36
+    compileSdk 37
 
     defaultConfig {
         applicationId "org.reclaimprotocol.inapp_sdk_example"
         minSdk 24
-        targetSdk 36
+        targetSdk 37
         versionCode 1
         versionName "1.0"
 
@@ -52,13 +51,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = '17'
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        }
     }
     buildFeatures {
+        // Off by default since AGP 9; RECLAIM_SDK_APP_ID/SECRET are resValues.
+        resValues true
         compose true
     }
 }
@@ -95,5 +98,5 @@ dependencies {
     debugImplementation libs.androidx.ui.test.manifest
 
     //noinspection UseTomlInstead
-    implementation "org.reclaimprotocol:inapp_sdk:0.43.0"
+    implementation "org.reclaimprotocol:inapp_sdk:0.45.0"
 }

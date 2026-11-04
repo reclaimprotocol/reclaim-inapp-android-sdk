@@ -27,9 +27,9 @@ dependencyResolutionManagement {
         }
         // SDK users don't have to do this.
         // Only for local sdk development.
-        // maven {
-        //     url "../dist/library/0.43.0/repo"
-        // }
+         maven {
+             url "../dist/library/0.45.0/repo"
+         }
     }
 }
 

@@ -27,7 +27,7 @@ endif
 # checkDebugAarMetadata unless they compile against at least that level. Compiling against 37
 # requires AGP 9.1.1+, which no stable React Native release ships, so a 37 here makes the SDK
 # uninstallable for RN hosts. Keep in sync with the add-to-app module's COMPILE_SDK.
-MAX_MIN_COMPILE_SDK := 36
+MAX_MIN_COMPILE_SDK := 37
 
 build: check_jdk
 	@echo "Building version $(VERSION)"

@@ -4,7 +4,14 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import io.flutter.plugin.common.BinaryMessenger
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.reclaimprotocol.inapp_sdk.ReclaimVerification.ReclaimSessionIdentity
+import kotlin.coroutines.resume
 
 /**
  * This class provides functionality to initiate and manage the verification process
@@ -299,6 +306,25 @@ public class ReclaimVerification {
             return moduleApi
         }
 
+        // Pigeon generates `ReclaimModuleApi` as suspend functions. The public API
+        // here stays callback-based, so each call runs on the main thread (where
+        // Flutter platform channels must be used) and reports its outcome through
+        // the callback, success or failure.
+        private val moduleScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+        private fun <T> callModule(call: suspend () -> T, onResult: (Result<T>) -> Unit) {
+            moduleScope.launch {
+                val result = try {
+                    Result.success(call())
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    Result.failure(e)
+                }
+                onResult(result)
+            }
+        }
+
         /**
          * This instantiates and caches the backend used by the ReclaimActivity.
          * Calling this method in advance is recommended to avoid the first launch of the ReclaimActivity from being slow.
@@ -324,9 +350,7 @@ public class ReclaimVerification {
             preWarm(context)
             ReclaimActivity.start(context)
             val moduleApi = getModuleApi(context)
-            moduleApi.startVerificationFromUrl(
-                requestUrl
-            ) { result ->
+            callModule({ moduleApi.startVerificationFromUrl(requestUrl) }) { result ->
                 ReclaimActivity.closeAll()
                 onApiResult(ReclaimSessionIdentity.sessionId, result, handler)
             }
@@ -349,8 +373,7 @@ public class ReclaimVerification {
             preWarm(context)
             ReclaimActivity.start(context)
             val moduleApi = getModuleApi(context)
-            moduleApi.startVerification(
-                ReclaimApiVerificationRequest(
+            val apiRequest = ReclaimApiVerificationRequest(
                     appId = request.appId,
                     providerId = request.providerId,
                     secret = request.secret,
@@ -364,7 +387,7 @@ public class ReclaimVerification {
                         resolvedVersion = request.providerVersion.resolvedVersion
                     )
                 )
-            ) { result ->
+            callModule({ moduleApi.startVerification(apiRequest) }) { result ->
                 ReclaimActivity.closeAll()
                 onApiResult(ReclaimSessionIdentity.sessionId.ifBlank {
                     request.session?.sessionId ?: ""
@@ -390,9 +413,7 @@ public class ReclaimVerification {
             ReclaimActivity.start(context)
             val moduleApi = getModuleApi(context)
             val maybeSessionId = template["sessionId"]
-            moduleApi.startVerificationFromJson(
-                template
-            ) { result ->
+            callModule({ moduleApi.startVerificationFromJson(template) }) { result ->
                 ReclaimActivity.closeAll()
                 onApiResult(ReclaimSessionIdentity.sessionId.ifBlank {
                     maybeSessionId as? String ?: ""
@@ -459,7 +480,7 @@ public class ReclaimVerification {
             hostApi.sessionHandler = sessionManagement?.handler
             hostApi.sessionIdentityUpdateHandler = sessionIdentityUpdateHandler
 
-            moduleApi.setOverrides(
+            callModule({ moduleApi.setOverrides(
                 providerArg = if (provider == null) null else ClientProviderInformationOverride(
                     providerInformationUrl = provider.url,
                     providerInformationJsonString = provider.jsonString,
@@ -506,15 +527,14 @@ public class ReclaimVerification {
                     theme = appInfo.theme
                 ),
                 capabilityAccessTokenArg = capabilityAccessToken,
-                callback = { result ->
-                    result
-                    .onSuccess {
-                        callback(Result.success(Unit))
-                    }.onFailure { exception ->
-                        callback(Result.failure(ReclaimPlatformException(exception.message ?: "Could not set overrides", exception)))
-                    }
-                },
-            )
+            ) }) { result ->
+                result
+                .onSuccess {
+                    callback(Result.success(Unit))
+                }.onFailure { exception ->
+                    callback(Result.failure(ReclaimPlatformException(exception.message ?: "Could not set overrides", exception)))
+                }
+            }
         }
 
         public fun clearAllOverrides(
@@ -525,7 +545,9 @@ public class ReclaimVerification {
             val hostApi = ReclaimHostOverridesApiImpl.getInstance(messenger)
             val moduleApi = getModuleApi(context)
 
-            moduleApi.clearAllOverrides {
+            // As before, host-side overrides are cleared once the module call
+            // finishes, whatever its outcome.
+            callModule({ moduleApi.clearAllOverrides() }) {
                 hostApi.clearOverrides()
                 callback(Result.success(Unit))
             }
@@ -541,13 +563,11 @@ public class ReclaimVerification {
             val messenger = ReclaimActivity.requireBinaryMessenger(context)
             val hostApi = ReclaimHostVerificationApiImpl.getInstance(messenger)
             if (options == null) {
-                moduleApi.setVerificationOptions(null) { result ->
-                    callback(result)
-                }
+                callModule({ moduleApi.setVerificationOptions(null) }, callback)
             } else {
                 val provider = options.attestorAuthRequestProvider
                 hostApi.attestorAuthRequestProvider = provider
-                moduleApi.setVerificationOptions(ReclaimApiVerificationOptions(
+                val apiOptions = ReclaimApiVerificationOptions(
                     canDeleteCookiesBeforeVerificationStarts = options.canDeleteCookiesBeforeVerificationStarts,
                     canUseAttestorAuthenticationRequest = provider != null,
                     claimCreationType = options.claimCreationType.toApi(),
@@ -555,9 +575,8 @@ public class ReclaimVerification {
                     isCloseButtonVisible = options.isCloseButtonVisible,
                     locale = options.locale,
                     useTeeOperator = options.useTeeOperator
-                )) { result ->
-                    callback(result)
-                }
+                )
+                callModule({ moduleApi.setVerificationOptions(apiOptions) }, callback)
             }
         }
 
@@ -624,9 +643,7 @@ public class ReclaimVerification {
         ) {
             preWarm(context)
             val moduleApi = getModuleApi(context)
-            moduleApi.setConsoleLogging(enabled) { result ->
-                callback(result)
-            }
+            callModule({ moduleApi.setConsoleLogging(enabled) }, callback)
         }
     }
 }
@@ -669,61 +686,51 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
         sessionIdentityUpdateHandler = null
     }
 
-    override fun onLogs(logJsonString: String, callback: (Result<Unit>) -> Unit) {
+    override suspend fun onLogs(logJsonString: String) {
         logHandler?.onLogs(logJsonString)
-        callback(Result.success(Unit))
     }
 
-    override fun createSession(
+    override suspend fun createSession(
         appId: String,
         providerId: String,
         timestamp: String,
         signature: String,
         providerVersion: String,
-        callback: (Result<SessionInitResponseApi>) -> Unit
-    ) {
-        sessionHandler?.createSession(
-            appId = appId,
-            providerId = providerId,
-            timestamp = timestamp,
-            signature = signature,
-            providerVersion = providerVersion,
-            callback = { e ->
-                callback(e.fold(
-                    onSuccess = {
-                        Result.success(SessionInitResponseApi(
-                            sessionId = it.sessionId,
-                            resolvedProviderVersion = it.resolvedProviderVersion
-                        ))
-                    },
-                    onFailure = { e ->
-                        Result.failure(e)
-                    }
-                ))
-            }
+    ): SessionInitResponseApi {
+        val handler = sessionHandler ?: throw IllegalStateException("No session handler provided")
+        val response = awaitHostResult<ReclaimOverrides.SessionManagement.InitResponse> { callback ->
+            handler.createSession(
+                appId = appId,
+                providerId = providerId,
+                timestamp = timestamp,
+                signature = signature,
+                providerVersion = providerVersion,
+                callback = callback,
+            )
+        }
+        return SessionInitResponseApi(
+            sessionId = response.sessionId,
+            resolvedProviderVersion = response.resolvedProviderVersion
         )
     }
 
-    override fun updateSession(
+    override suspend fun updateSession(
         sessionId: String,
         status: ReclaimSessionStatus,
         metadata: Map<String, Any?>?,
-        callback: (Result<Boolean>) -> Unit
-    ) {
-        sessionHandler?.updateSession(
-            sessionId = sessionId,
-            status = status,
-            callback = callback
-        )
+    ): Boolean {
+        val handler = sessionHandler ?: throw IllegalStateException("No session handler provided")
+        return awaitHostResult { callback ->
+            handler.updateSession(sessionId = sessionId, status = status, callback = callback)
+        }
     }
 
-    override fun logSession(
+    override suspend fun logSession(
         appId: String,
         providerId: String,
         sessionId: String,
         logType: String,
         metadata: Map<String, Any?>?,
-        callback: (Result<Unit>) -> Unit
     ) {
         sessionHandler?.logSession(
             appId = appId,
@@ -732,40 +739,35 @@ private class ReclaimHostOverridesApiImpl private constructor() : ReclaimHostOve
             logType = logType,
             metadata = metadata,
         )
-        callback(Result.success(Unit))
     }
 
-    override fun onSessionIdentityUpdate(
-        update: ReclaimSessionIdentityUpdate?, callback: (Result<Unit>) -> Unit
-    ) {
+    override suspend fun onSessionIdentityUpdate(update: ReclaimSessionIdentityUpdate?) {
         ReclaimSessionIdentity.appId = update?.appId ?: ""
         ReclaimSessionIdentity.sessionId = update?.sessionId ?: ""
         ReclaimSessionIdentity.providerId = update?.providerId ?: ""
         sessionIdentityUpdateHandler?.onSessionIdentityUpdate(ReclaimSessionIdentity)
     }
 
-    override fun fetchProviderInformation(
+    override suspend fun fetchProviderInformation(
         appId: String,
         providerId: String,
         sessionId: String,
         signature: String,
         timestamp: String,
         resolvedVersion: String,
-        callback: (Result<String>) -> Unit
-    ) {
-        if (providerCallback == null) {
-            callback(Result.failure(Exception("No callback provided")))
-            return
+    ): String {
+        val handler = providerCallback ?: throw Exception("No callback provided")
+        return awaitHostResult { callback ->
+            handler.fetchProviderInformation(
+                appId = appId,
+                providerId = providerId,
+                sessionId = sessionId,
+                signature = signature,
+                timestamp = timestamp,
+                resolvedVersion = resolvedVersion,
+                callback = callback,
+            )
         }
-        providerCallback?.fetchProviderInformation(
-            appId = appId,
-            providerId = providerId,
-            sessionId = sessionId,
-            signature = signature,
-            timestamp = timestamp,
-            resolvedVersion = resolvedVersion,
-            callback = callback
-        )
     }
 }
 
@@ -785,14 +787,26 @@ private class ReclaimHostVerificationApiImpl private constructor() : ReclaimHost
             field = value
         }
 
-    override fun fetchAttestorAuthenticationRequest(
+    override suspend fun fetchAttestorAuthenticationRequest(
         reclaimHttpProvider: Map<Any?, Any?>,
-        callback: (Result<String>) -> Unit
-    ) {
-        if (attestorAuthRequestProvider == null) {
-            callback(Result.failure(Exception("No attestorAuthRequestProvider was provided")))
-        } else {
-            attestorAuthRequestProvider?.fetchAttestorAuthenticationRequest(reclaimHttpProvider, callback)
+    ): String {
+        val provider = attestorAuthRequestProvider
+            ?: throw Exception("No attestorAuthRequestProvider was provided")
+        return awaitHostResult { callback ->
+            provider.fetchAttestorAuthenticationRequest(reclaimHttpProvider, callback)
         }
     }
 }
+
+/**
+ * Bridges a callback-based host handler to Pigeon's suspend host API.
+ *
+ * Resumes once with the handler's first result; a later call is ignored rather
+ * than crashing on a double resume.
+ */
+private suspend fun <T> awaitHostResult(register: (callback: (Result<T>) -> Unit) -> Unit): T =
+    suspendCancellableCoroutine { continuation ->
+        register { result ->
+            if (continuation.isActive) continuation.resume(result)
+        }
+    }.getOrThrow()
