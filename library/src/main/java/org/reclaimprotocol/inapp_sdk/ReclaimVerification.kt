@@ -537,6 +537,54 @@ public class ReclaimVerification {
             }
         }
 
+        /**
+         * Configures Builder transport for `api=2` verification links.
+         *
+         * Optional: without it, Builder links use `https://build.reclaimprotocol.org`
+         * and the SDK's in-app Verification Client. [clearAllOverrides] restores
+         * those defaults. Builder links never fall back to the legacy flow.
+         *
+         * @param context The Android context
+         * @param overrides The Builder base URL (HTTPS) and Verification Client UUID
+         * @param callback Returns Result<Unit>; a failure is a [ReclaimPlatformException],
+         *                 for example when the base URL is not HTTPS
+         *
+         * Example usage:
+         * ```kotlin
+         * ReclaimVerification.setBuilderModeOverrides(
+         *     context = context,
+         *     overrides = ReclaimOverrides.BuilderMode(
+         *         baseUrl = "https://build.reclaimprotocol.org",
+         *         verificationClientId = "01234567-89ab-4def-8123-456789abcdef",
+         *     ),
+         * ) { result ->
+         *     result.onFailure { error ->
+         *         // Handle error
+         *     }
+         * }
+         * ```
+         */
+        public fun setBuilderModeOverrides(
+            context: Context,
+            overrides: ReclaimOverrides.BuilderMode,
+            callback: (Result<Unit>) -> Unit
+        ) {
+            preWarm(context)
+            val moduleApi = getModuleApi(context)
+            val apiOverrides = ClientBuilderModeOverrides(
+                baseUrl = overrides.baseUrl,
+                verificationClientId = overrides.verificationClientId,
+            )
+            callModule({ moduleApi.setBuilderModeOverrides(apiOverrides) }) { result ->
+                result
+                .onSuccess {
+                    callback(Result.success(Unit))
+                }.onFailure { exception ->
+                    callback(Result.failure(ReclaimPlatformException(exception.message ?: "Could not set Builder mode overrides", exception)))
+                }
+            }
+        }
+
         public fun clearAllOverrides(
             context: Context, callback: (Result<Unit>) -> Unit
         ) {

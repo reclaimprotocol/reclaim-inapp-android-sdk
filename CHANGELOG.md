@@ -7,6 +7,8 @@
   restores it.
 * Remove the Dart-only `configureBuilderVerification` in favour of `setBuilderModeOverrides`,
   the single API for Dart, Android, and iOS hosts.
+* Add `ReclaimVerification.setBuilderModeOverrides(context, ReclaimOverrides.BuilderMode(baseUrl,
+  verificationClientId)) { result -> }` to configure Builder transport from Android hosts.
 * Require Dart >=3.13 and Flutter >=3.47.
 * [Breaking] Build Android AARs against compileSdk 37, so published artifacts declare
   `minCompileSdk=37`. Android hosts, including React Native apps, must compile against API 37
