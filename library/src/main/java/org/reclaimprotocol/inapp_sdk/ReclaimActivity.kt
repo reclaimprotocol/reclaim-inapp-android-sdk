@@ -118,13 +118,60 @@ public class ReclaimActivity : FlutterActivity() {
 
     var attemptId: String? = null
 
+    private var staleRestoration: Boolean? = null
+
+    /**
+     * Whether Android restored this activity with an intent naming a cached FlutterEngine that no
+     * longer exists in this process.
+     *
+     * The engine cache and [attemptIds] are both process local, so a missing engine always means
+     * the verification this activity was launched for is gone: the process was killed and Android
+     * is restoring the activity stack. [onCreate] finishes such an activity, but
+     * [FlutterActivity.onCreate] resolves the cached engine before that and throws, so the cached
+     * engine id must not be reported on this path.
+     *
+     * Computed once, on the first call from [FlutterActivity.onCreate], and then shared by
+     * [getCachedEngineId], [provideFlutterEngine] and [shouldDestroyEngineWithHost] so that all
+     * three agree for the lifetime of this activity.
+     */
+    private fun isStaleRestoration(): Boolean {
+        val known = staleRestoration
+        if (known != null) return known
+        val value = super.getCachedEngineId() != null && !hasEngine()
+        staleRestoration = value
+        Log.i("ReclaimActivity", "isStaleRestoration: $value")
+        return value
+    }
+
+    override fun getCachedEngineId(): String? {
+        if (isStaleRestoration()) {
+            // Reporting the id would make FlutterActivity throw, because the engine it names died
+            // with the process. Returning null sends Flutter to provideFlutterEngine instead.
+            return null
+        }
+        return super.getCachedEngineId()
+    }
+
+    override fun provideFlutterEngine(context: Context): FlutterEngine? {
+        if (isStaleRestoration()) {
+            // A throwaway engine for an activity that is about to finish. It is deliberately kept
+            // out of the FlutterEngineCache: the next verification pre-warms its own engine and
+            // applies the host's overrides to it, and this one is destroyed with the activity by
+            // shouldDestroyEngineWithHost below. onCreate finishes this activity, so Flutter never
+            // reaches onStart and never runs a Dart entrypoint on this engine.
+            return FlutterEngine(context)
+        }
+        return super.provideFlutterEngine(context)
+    }
+
+    override fun shouldDestroyEngineWithHost(): Boolean {
+        if (isStaleRestoration()) {
+            return true
+        }
+        return super.shouldDestroyEngineWithHost()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Must run before super.onCreate: FlutterActivity resolves the cached engine there.
-        // After process death Android can restore this activity with its original
-        // cached-engine intent while the process-local FlutterEngineCache is empty,
-        // which makes Flutter throw before any Reclaim code runs. Re-warming here keeps
-        // the cached engine id resolvable; the stale attempt is then finished below.
-        preWarm(applicationContext)
         super.onCreate(savedInstanceState)
         Log.i("ReclaimActivity", "ReclaimActivity onCreate")
         instances.add(this)
@@ -141,6 +188,14 @@ public class ReclaimActivity : FlutterActivity() {
         if (attemptId != null) {
             attemptIds.remove(attemptId)
         }
+        instances.remove(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // The system can destroy this activity without finish() being called, so clean up here
+        // too. Otherwise instances keeps references to destroyed activities and closeAll() calls
+        // finish() on them.
         instances.remove(this)
     }
 }
