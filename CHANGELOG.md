@@ -1,3 +1,31 @@
+## 0.45.0
+
+* Builder mode no longer requires configuration. When the host does not call
+  `setBuilderModeOverrides`, `api=2` links use
+  `https://build.reclaimprotocol.org` and the SDK's in-app Verification Client ID.
+  Explicit configuration still overrides the default, and `clearAllOverrides`
+  restores it.
+* Remove the Dart-only `configureBuilderVerification` in favour of `setBuilderModeOverrides`,
+  the single API for Dart, Android, and iOS hosts.
+* Add `ReclaimVerification.setBuilderModeOverrides(context, ReclaimOverrides.BuilderMode(baseUrl,
+  verificationClientId)) { result -> }` to configure Builder transport from Android hosts.
+* Require Dart >=3.13 and Flutter >=3.47.
+* [Breaking] Build Android AARs against compileSdk 37, so published artifacts declare
+  `minCompileSdk=37`. Android hosts, including React Native apps, must compile against API 37
+  (AGP 9.1.1+).
+* Compile the AARs with Kotlin 2.2.10 and pin `kotlin-stdlib` to it (was 2.0.21), matching the
+  Kotlin Gradle Plugin floor of AGP 9's built-in Kotlin. Hosts need Kotlin 2.2.10+.
+* Bump `reclaim_inapp_sdk` to 0.45.0 (legacy attestation type, encoded session paths,
+  transport retries, runtime config after the claimant patch).
+* Submit a bounded `builderProblem` on Builder failure results instead of raw exception text.
+* Generate the native bindings without hand edits. Pigeon copies a schema `dynamic` verbatim
+  into Kotlin and Swift, so the schema's JSON maps (`proofs`, `startVerificationFromJson`,
+  `updateSession`/`logSession` metadata, `fetchAttestorAuthenticationRequest`) are now
+  `Object?`, which Pigeon maps to `Any?`. `scripts/normalize_generated_bindings.dart`
+  (run by `make gen_schema`) then restores the Swift `Sendable?` signatures and the
+  `MessagesBinaryMessenger` typealias, and fails if `dynamic` reappears. Kotlin and Swift
+  host signatures are unchanged from 0.43.0.
+
 ## 0.43.0
 
 * Build the library against compileSdk 36 instead of 37. The published 0.43.0 AAR declared

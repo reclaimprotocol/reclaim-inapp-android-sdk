@@ -42,7 +42,7 @@ Some projects may require you to add the repositories to the root `build.gradle`
 Next, add the following to your app level `build.gradle` file:
 
 ```groovy
-implementation "org.reclaimprotocol:inapp_sdk:0.43.0"
+implementation "org.reclaimprotocol:inapp_sdk:0.45.0"
 ```
 
 Add the following to your app level `AndroidManifest.xml` file under the `<application>` tag:
@@ -144,6 +144,117 @@ The returned result `ReclaimVerification.ResultHandler.onResponse` in is a `Recl
 If the verification is cancelled or failed, the handler's `ReclaimVerification.ResultHandler.onException` method is called with a `ReclaimVerification.ReclaimVerificationException` object.
 
 For a complete example, see the [Reclaim Compose Example - Android](example/README.md).
+
+### Builder mode
+
+With Builder, your backend creates a verification session and your app opens
+it. The app needs no app secret and no configuration.
+
+#### 1. Create the session on your backend
+
+Create one session per verification, with `verificationClientUrl` set to the
+in-app SDK's client, `https://build.reclaimprotocol.org/share/inapp-sdk`. Keep
+your organization secret (`RECLAIM_ORG_SECRET`) on the backend; never ship it
+in the app.
+
+With `curl`:
+
+```bash
+curl -X POST https://build.reclaimprotocol.org/verifications/sessions \
+  -H "authorization: Bearer $RECLAIM_ORG_SECRET" \
+  -H "content-type: application/json" \
+  -d '{
+    "providers": [{ "providerId": "<your-provider-id>" }],
+    "context": { "userId": "abc" },
+    "verificationClientUrl": "https://build.reclaimprotocol.org/share/inapp-sdk"
+  }'
+# → 201 { "id": "<sessionId>", "verificationUrl": "https://…?sessionId=<sessionId>&api=2", "status": "pending", … }
+```
+
+With the [`@reclaimprotocol/client`](https://www.npmjs.com/package/@reclaimprotocol/client)
+package (Node.js):
+
+```js
+import { ReclaimVerification, VerificationClient } from '@reclaimprotocol/client'
+
+const reclaim = ReclaimVerification.create({
+  orgSecret: process.env.RECLAIM_ORG_SECRET,
+})
+
+const session = await reclaim.sessions.create({
+  providers: [{ providerId: '<your-provider-id>' }],
+  context: { userId: 'abc' },
+  verificationClientUrl: VerificationClient.inAppSdk,
+})
+// Store session.id, then send session.verificationUrl (or session.id) to the app.
+```
+
+The session is bound to the Verification Client it was created for. If you
+omit `verificationClientUrl`, Builder creates a Portal session, and the app's
+requests fail with `403 x-reclaim-vc-id does not match this session`.
+
+The verified result is delivered to your backend's callback subscription, not
+returned by the app. Receive it with `reclaim.results.receive(...)` from the
+same package.
+
+#### 2. Open it in the app
+
+Pass the returned `verificationUrl` to `startVerificationFromUrl`:
+
+```kotlin
+ReclaimVerification.startVerificationFromUrl(
+    context = context,
+    requestUrl = verificationUrl,
+    handler = object : ReclaimVerification.ResultHandler {
+        override fun onResponse(response: ReclaimVerification.Response) {
+            // The claimant finished. Your backend receives the verified result.
+        }
+
+        override fun onException(exception: ReclaimVerification.ReclaimVerificationException) {
+            Log.e("MainActivity", "Builder verification failed", exception)
+        }
+    }
+)
+```
+
+Or, if your backend returns the session id instead of a link, pass it with
+`api` set to `"2"` to `startVerificationFromJson`:
+
+```kotlin
+val template: Map<Any?, Any?> = mapOf("api" to "2", "sessionId" to sessionId)
+
+ReclaimVerification.startVerificationFromJson(
+    context = context,
+    template = template,
+    handler = handler, // the same ReclaimVerification.ResultHandler as above
+)
+```
+
+- `sessionId` is the `id` from the session-creation response.
+- Add `"diag" to "1"` only if the session's `verificationUrl` contains `diag=1`.
+- Only `api`, `sessionId`, and `diag` are read; other keys are ignored. The
+  Builder URL comes from the SDK's configuration, never from the link or JSON.
+- A Builder link or JSON without a `sessionId`, or a Builder request that
+  fails, reports `onException`. It never falls back to the legacy flow.
+
+#### Optional: another Builder deployment or Verification Client
+
+To use another Builder deployment or a Verification Client registered for your
+app, configure it once before opening a Builder link:
+
+```kotlin
+ReclaimVerification.setBuilderModeOverrides(
+    context = context,
+    overrides = ReclaimOverrides.BuilderMode(
+        baseUrl = "https://build.reclaimprotocol.org",
+        verificationClientId = "01234567-89ab-4def-8123-456789abcdef",
+    ),
+) { result ->
+    result.onFailure { error -> Log.e("MainActivity", "Builder config failed", error) }
+}
+```
+
+`ReclaimVerification.clearAllOverrides` restores the defaults.
 
 ## Troubleshooting
 

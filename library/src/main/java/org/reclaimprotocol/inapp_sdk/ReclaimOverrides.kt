@@ -135,6 +135,22 @@ public class ReclaimOverrides {
         public val theme: String? = null
     )
 
+    /**
+     * Builder transport for `api=2` verification links.
+     *
+     * Optional: without it, Builder links use `https://build.reclaimprotocol.org`
+     * and the SDK's in-app Verification Client. Set it only for another Builder
+     * deployment or a Verification Client registered for your app.
+     *
+     * @property baseUrl HTTPS origin of Builder.
+     * @property verificationClientId UUID of the registered Verification Client,
+     *   sent as `x-reclaim-vc-id`. It is a public identifier, not a secret.
+     */
+    public data class BuilderMode(
+        public val baseUrl: String,
+        public val verificationClientId: String,
+    )
+
     public interface SessionIdentityUpdateHandler {
         public fun onSessionIdentityUpdate(identity: ReclaimVerification.ReclaimSessionIdentity)
     }
